@@ -1,5 +1,26 @@
-.main p {
+body {
+    background-color: black;
+}
+
+.main {
     font-family: sans-serif;
     background-color: black;
     color: white;
+}
+
+.main .info {
+    margin-left: 300px;
+}
+
+.main .info ls{
+    display: inline;
+    margin: 10px;
+}
+
+#screen {
+    border:1px solid #ffffff;
+}
+
+.image img {
+    visibility: hidden;
 }

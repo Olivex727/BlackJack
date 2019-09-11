@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/Olivex727/SolitaireForOne/issues"
   },
-  "homepage": "https://github.com/Olivex727/SolitaireForOne#readme"
+  "homepage": "https://github.com/Olivex727/SolitaireForOne#readme",
+  "dependencies": {
+    "readimage": "^1.1.1"
+  }
 }
