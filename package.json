@@ -1,0 +1,19 @@
+{
+  "name": "solitaireforone",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Olivex727/SolitaireForOne.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Olivex727/SolitaireForOne/issues"
+  },
+  "homepage": "https://github.com/Olivex727/SolitaireForOne#readme"
+}
