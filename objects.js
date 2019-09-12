@@ -12,6 +12,7 @@ let objects =
     "NewEasy" : { scene:"title", text:"New -- Easy", pos:[10, 50 + size[1] / 5], type:"text", click:true, onclick:"NewGame(false);", style:"30px Georgia", size:[165, 30]},
     "NewHard" : { scene:"title", text:"New -- Hard", pos:[10, 50 + size[1]* 2 / 5], type:"text", click:true, onclick:"NewGame(true);", style:"30px Georgia", size:[165, 30]},
     "Load" : { scene:"title", text:"Load", pos:[10, 50 + size[1]* 3 / 5], type:"text", click:true, onclick:"LoadGame();", style:"30px Georgia", size:[165, 30]},
+    "BackArea" : { scene:"game", pos:[size[0]/4, 0], type:"card", click:false, size:[size[0]/2, size[1]], empty:true},
     "TestSlot" : { scene:"game", pos:[30, 30], type:"card", click:false/*CHANGE LATER*/, onclick:"AutoAssign();", size:imgsize, empty:true},
 }
 

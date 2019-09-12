@@ -8,13 +8,19 @@ let score = 0;
 let difficulty = false;
 let moves = 0;
 
+//Audio values
+let jazzplay = false;
+let sfxplay = false;
+
 //Set timer and onload events
 let timer = window.setInterval(function(){update()}, 1000)
 
 //Get Image module
 renderImage = (source, file) => {
     let img = new Image();
-    img.src = "/"+file+"/" + source + ".png"
+    let load = document.getElementById("imgload");
+    load.src = "/" + file + "/" + source + ".png";
+    img.src = "/"+file+"/" + source + ".png";
     return img;
 }
 
@@ -33,6 +39,7 @@ window.onload = function () {
     });
     setScene();
     update();
+    audioplay("click");
 };
 
 function detectPress(x, y){
@@ -45,6 +52,7 @@ function detectPress(x, y){
             if (objects[obj].pos[0] <= x && x <= objects[obj].pos[0] + objects[obj].size[0]) {
                 if (objects[obj].pos[1] - textGiveway <= y && y <= objects[obj].pos[1] + objects[obj].size[1] - textGiveway) {
                     console.log('Clicked: ' +obj);
+                    if(sfxplay){document.getElementById('click').play();}
                     eval(objects[obj].onclick)
                 }
             }
@@ -120,4 +128,33 @@ function LoadGame(){
 
 function SaveGame(){
     //Save the current game and override the file
+}
+
+function audioplay(form){
+    console.log("AUDIO");
+    var aud = document.getElementById(form);
+    var audbutton = document.getElementById(form+"_ctrl");
+    if(form === "jazz"){
+        if (!jazzplay) {
+            aud.play();
+            jazzplay = true;
+            audbutton.src = "/ops/audio_on.png";
+        }else{
+            aud.pause();
+            jazzplay = false;
+            audbutton.src = "/ops/audio_off.png";
+        }
+    }
+    else if (form === "click"){
+        if(sfxplay) {
+            aud.muted = true;
+            sfxplay = false;
+            audbutton.src = "/ops/audio_off.png";
+        } else {
+            aud.muted = false;
+            sfxplay = true;
+            audbutton.src = "/ops/audio_on.png";
+        }
+    }
+    
 }
