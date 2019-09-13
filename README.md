@@ -1,6 +1,13 @@
 # SolitaireForOne
 Y12 Term 4 Project
 
+## Controls
+- Choose a game setting in the title screen
+- The Background Music and SFX volume buttons are at the bottom
+- Click once to 'pick up' the card
+- Click a second time to 'drop' the card
+- Double Click to automatically move the card
+
 ## Notes on Social and Ethical issues
 - The jazz music being played in the background will not be set to autoplay as to keep to Google's policy and the dangers of starting the game in high volume
 

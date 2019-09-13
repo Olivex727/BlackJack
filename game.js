@@ -12,8 +12,15 @@ let moves = 0;
 let jazzplay = false;
 let sfxplay = false;
 
+//Card Movement
+let drag = null;
+let cardDrag = false;
+let coords = [0, 0];
+let originalpos = [0, 0];
+
 //Set timer and onload events
-let timer = window.setInterval(function(){update()}, 1000)
+let timer = window.setInterval(function(){update()}, 1000);
+let dragtimer = null;
 
 //Get Image module
 renderImage = (source, file) => {
@@ -35,30 +42,68 @@ window.addEventListener("mousemove", (event) => {
 //On window load
 window.onload = function () {
     window.addEventListener("click", (event) => {
-        detectPress(event.clientX, event.clientY);
+        detectPress(event.clientX, event.clientY, "manual"); //Clicking once will create a card drag
+    });
+    window.addEventListener("dblclick", (event) => {
+        detectPress(event.clientX, event.clientY, "auto"); //Clicking twice wiil auto drag
     });
     setScene();
     update();
     audioplay("click");
 };
 
-function detectPress(x, y){
-    x -= 10; y -= 10;
-    console.log(x + ", " + y);
-    let textGiveway = 0;
-    for (let obj in objects) {
-        if (objects[obj].scene === scene && objects[obj].click){
-            if (objects[obj].type === "text"){textGiveway = objects[obj].size[1]}
-            if (objects[obj].pos[0] <= x && x <= objects[obj].pos[0] + objects[obj].size[0]) {
-                if (objects[obj].pos[1] - textGiveway <= y && y <= objects[obj].pos[1] + objects[obj].size[1] - textGiveway) {
-                    console.log('Clicked: ' +obj);
-                    if(sfxplay){document.getElementById('click').play();}
-                    eval(objects[obj].onclick)
+function detectPress(x, y, op=""){
+    if (cardDrag) {
+        cardDrag = false;
+        window.clearInterval(dragtimer);
+        dragtimer = null;
+    }
+    else
+    {
+        x -= 10; y -= 10;
+        console.log(x + ", " + y);
+        let textGiveway = 0;
+        for (let obj in objects) {
+            if (objects[obj].scene === scene && objects[obj].click){
+                if (objects[obj].type === "text"){textGiveway = objects[obj].size[1]}
+                if (objects[obj].pos[0] <= x && x <= objects[obj].pos[0] + objects[obj].size[0]) {
+                    if (objects[obj].pos[1] - textGiveway <= y && y <= objects[obj].pos[1] + objects[obj].size[1] - textGiveway) {
+                        console.log('Clicked: ' +obj);
+                        if(sfxplay){document.getElementById('click').play();}
+                        if (objects[obj].type === "card"){
+                            drag = obj;
+                            coords = [x - objects[obj].pos[0], y - objects[obj].pos[1]];
+                            if (op === "manual") {
+                                cardDrag = true;
+                                dragtimer = window.setInterval(function(){dragObj()}, 10);
+                                originalpos = objects[obj].pos;
+                                console.log(originalpos);
+                            }
+                            else if (op === "auto"){
+                                objects[drag].pos = originalpos;
+                                auto();
+                            }
+                        }
+                        else {eval(objects[obj].onclick)}
+                    }
                 }
-            }
 
+            }
         }
     }
+    
+}
+
+function auto(){
+    console.log("Auto Move");
+}
+
+function dragObj() {
+    console.log("Manual Move");
+    if (mouseX - 30 > 0 && mouseX < 800 && mouseY - 30 > 0 && mouseY < 500) {
+        objects[drag].pos = [mouseX - coords[0], mouseY - coords[1]];
+    }  
+    setScene();
     
 }
 
@@ -82,6 +127,7 @@ function update(){
 
 //Manages Object Placement
 function setScene(){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = "#ffff00";
     ctx.drawImage(renderImage("background2", "bck"), 0, 0, size[0], size[1]);
     for(let obj in objects)
