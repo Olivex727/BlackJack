@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/Olivex727/SolitaireForOne#readme",
   "dependencies": {
+    "python-shell": "^1.0.8",
     "readimage": "^1.1.1"
   }
 }

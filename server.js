@@ -31,22 +31,15 @@ app.get('/css', function (req, res) {
     res.sendfile("style.css");
 });
 
-/*
-app.get('/image', function (req, res) {
-    //if (req.query.img === "bck") {
-        var filedata = fs.readFileSync("background.png");
-        ri(filedata, function (err, image) {
-            if (err) {
-                console.log("failed to parse the image")
-                console.log(err)
-            }
-            res.send(image)
-        });
-        //console.log("jer");
-    //}
-
+app.get('/py', function (req, res) {
+    const spawn = require('child_process').spawn;
+    const py = spawn('python', ['test.py', 'lol']);
+    py.stdout.on('data', (data) => {
+        //res.send (data.toString().split("\n")[0]);
+        res.send('lol');
+        console.log(data.toString().split("\n")[0]);
+    });
 });
-*/
 
 app.listen(3000, function () {
     console.log('listening on port 3000');

@@ -1,4 +1,10 @@
 from PIL import Image, ImageFilter, ImageDraw
+import sys
+
+print(sys.argv[0])
+
+#print(dataToSendBack)
+#sys.stdout.flush()
 
 #Image Generator for cards in pile
 print("hello world")

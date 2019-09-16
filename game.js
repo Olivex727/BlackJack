@@ -1,5 +1,15 @@
 console.log("START");
 
+function getpy(){
+const x = $.ajax({
+    type: "get",
+    url: "/py",
+    async : true
+}).responseText;
+
+console.log(x);
+}
+
 //Main game information
 let scene = "title";
 let gameon = false;
