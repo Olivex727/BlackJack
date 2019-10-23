@@ -1,5 +1,6 @@
 console.log("START");
 
+/*
 function getpy(){
 const x = $.ajax({
     type: "get",
@@ -9,6 +10,7 @@ const x = $.ajax({
 
 console.log(x);
 }
+*/
 
 //Main game information
 let scene = "title";
@@ -62,6 +64,7 @@ window.onload = function () {
     audioplay("click");
 };
 
+//Detects and manages the onclick/ondblclick events
 function detectPress(x, y, op=""){
     if (cardDrag) {
         cardDrag = false;
@@ -104,10 +107,12 @@ function detectPress(x, y, op=""){
     
 }
 
+//Automatic movements (Unused) -- Double Click
 function auto(){
     console.log("Auto Move");
 }
 
+//Drags the object around the screen, following the mouse
 function dragObj() {
     console.log("Manual Move");
     if (mouseX - 30 > 0 && mouseX < 800 && mouseY - 30 > 0 && mouseY < 500) {
@@ -186,6 +191,7 @@ function SaveGame(){
     //Save the current game and override the file
 }
 
+//Manages html audio elements
 function audioplay(form){
     console.log("AUDIO");
     var aud = document.getElementById(form);
