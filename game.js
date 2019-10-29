@@ -54,6 +54,9 @@ window.addEventListener("mousemove", (event) => {
 //On window load
 window.onload = function () {
     var h = new hand("Deck");
+    var d = new player("D");
+    console.log(objects);
+    console.log(h.getValue());
     window.addEventListener("click", (event) => {
         detectPress(event.clientX, event.clientY, "manual"); //Clicking once will create a card drag
     });
