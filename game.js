@@ -53,10 +53,18 @@ window.addEventListener("mousemove", (event) => {
 
 //On window load
 window.onload = function () {
-    var h = new hand("Deck");
-    var d = new player("D");
+
+    //Create game objects
+    let deck = new hand("Deck");
+    let dealer = new player("D");
+    let p1 = new player("P1", 0);
+    let o1 = new player("O1", 1);
+    let o2 = new player("O2", 2);
+
     console.log(objects);
-    console.log(h.getValue());
+    console.log(objects["D"].scene);
+    console.log(deck.getValue());
+
     window.addEventListener("click", (event) => {
         detectPress(event.clientX, event.clientY, "manual"); //Clicking once will create a card drag
     });
@@ -170,11 +178,10 @@ function setScene(){
 }
 
 //Loads a new game
-function NewGame(hardmode){
+function NewGame(){
     console.log("Loading Game ...");
     scene = "game";
     gameon = true;
-    difficulty = hardmode;
     setScene();
     update();
     console.log("Loaded");

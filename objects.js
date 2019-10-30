@@ -2,7 +2,7 @@
 const canvas = document.getElementById("screen");
 const ctx = canvas.getContext("2d");
 
-let objects = [];
+let objects = {};
 
 //Create object classes
 
@@ -99,25 +99,34 @@ class hand {
     }
 }
 
+//Player class contains all of the movement operations
 class player {
-    constructor(name){
+    constructor(name, pos=0){
         this.name = name;
+        this.pos = [[0, 0], [0, 0]]; //Set the standard position of screen elements
+        this.deckno = 0; //Set the deck no. to keep track of objects under split decks
         if(name.startsWith("D")){
             this.isDealer = true;
             this.hand = [new hand(name, name)];
-            this.elements = [new element("game", [(size[0]/2)-imgsize[0]/2, (size[1]/6)], "card", true, imgsize, true)]
-            objects[name] = this.elements[0];
+            this.pos[0] = [(size[0]/2)-imgsize[0]/2, (size[1]/6)]
+            this.pos[1] = [10 + size[0] / 3, 30];
         }
         else {
             this.hand = [new hand(name + "_1", name)];
             this.money = 100;
             this.bet = 0;
             this.wins = 0;
+            this.pos[0] = [((2*pos + 1)*size[0]/6)-imgsize[0]/2, (size[1]/2)+imgsize[1]];
+            this.pos[1] = [10, 30*(pos+1)];
         }
         if(name.startsWith("P")) {
             this.isActive = true;
         }
+        this.elements = [new element("game", this.pos[0], "card", true, imgsize, true).init(name)];
+        this.stats = new element("game", this.pos[1], "text", false, [165, 30], true, null, "("+name+") Wins: 0, Total: [0]", "", "15px Georgia").init(name+"Stats");
     }
+
+    createHand(){}
 
     split(deck){}
     hit(deck){}
@@ -127,10 +136,17 @@ class player {
     insure(deck){} //Insurance
 }
 
+//Controls the screen elements
 class element {
-    constructor(scene, pos, type, click, size, empty = true, image = "", name = "", text = "", onclick = "", style = "15px Georgia") {
+    constructor(scene, pos, type, click, size, empty = true, image = "", text = "", onclick = "", style = "15px Georgia") {
         this.scene = scene; this.pos = pos; this.type = type; this.click = click; this.onclick = onclick;
         this.size = size; this.style = style; this.empty = empty; this.text = text; this.image = image; this.name = name;
+    }
+
+    //Adds the element to the objects dictionaty
+    init(key){
+        objects[key] = this
+        return this;
     }
 
     updateimg(newimg){} //Update the image
@@ -143,31 +159,21 @@ const imgsize = [65, 100]
 
 let money = [100, 0, 100, 0] //Player:(Money, Bet), Opponent:(Money, Bet)
 
+//Dictionary of all screen elements
 objects =
 {
+    //(scene, pos, type, click, size, empty = true, image = "", text = "", onclick = "", style = "15px Georgia")
     //Title text objects
-    "Title" : { scene:"title", text:"BlackJack", pos:[10, 50], type:"text", click:false, style:"50px Georgia", size:[380, 30]},
-    "NewEasy" : { scene:"title", text:"New -- Easy", pos:[10, 50 + size[1] / 5], type:"text", click:true, onclick:"NewGame(false);", style:"30px Georgia", size:[165, 30]},
-    "NewHard" : { scene:"title", text:"New -- Hard", pos:[10, 50 + size[1]* 2 / 5], type:"text", click:true, onclick:"NewGame(true);", style:"30px Georgia", size:[165, 30]},
-    "Load" : { scene:"title", text:"Load", pos:[10, 50 + size[1]* 3 / 5], type:"text", click:true, onclick:"LoadGame();", style:"30px Georgia", size:[165, 30]},
+    "Title": new element("title", [10, 50], "text", false, [380, 30], true, null, "BlackJack", "", "50px Georgia"),
+    "New": new element("title", [10, 50 + size[1] / 4], "text", true, [380, 30], true, null, "New Game", "NewGame();", "30px Georgia"),
+    "Load": new element("title", [10, 50 + size[1] / 2], "text", true, [380, 30], true, null, "Load Game", "LoadGame();", "30px Georgia"),
     
-    //Game Boxes
-    "DealerSec" : { scene:"game", pos:[size[0]/3, 0], type:"card", click:false, size:[size[0]/3, size[1]/2], empty:true},
-    "GameSec" : { scene:"game", pos:[0, 0], type:"card", click:false, size:[size[0], size[1]/2], empty:true},
-    
-    //Card holders
-    //"TestSlot" : { scene:"game", pos:[30, 30], type:"card", click:true/*CHANGE LATER, onclick:"AutoAssign();"*/, size:imgsize, empty:true},
-    "Deck" : { scene:"game", pos:[20, (size[1]/3)-imgsize[1]/2], type:"card", click:true/*CHANGE LATER, onclick:"AutoAssign();"*/, size:imgsize, empty:true},
-    "O1" : { scene:"game", pos:[(size[0]/6)-imgsize[0]/2, (size[1]/2)+imgsize[1]], type:"card", click:true/*CHANGE LATER, onclick:"AutoAssign();"*/, size:imgsize, empty:true},
-    "P" : { scene:"game", pos:[(size[0]/2)-imgsize[0]/2, (size[1]/2)+imgsize[1]], type:"card", click:true/*CHANGE LATER, onclick:"AutoAssign();"*/, size:imgsize, empty:true},
-    "O2" : { scene:"game", pos:[(5*size[0]/6)-imgsize[0]/2, (size[1]/2)+imgsize[1]], type:"card", click:true/*CHANGE LATER, onclick:"AutoAssign();"*/, size:imgsize, empty:true},
-    //"D" : { scene:"game", pos:[(size[0]/2)-imgsize[0]/2, (size[1]/6)], type:"card", click:true/*CHANGE LATER, onclick:"AutoAssign();"*/, size:imgsize, empty:true},
-
-    //Game Information/Buttons
-    "PStats" : { scene:"game", text:"(Player) Wins: 0, Money: 100, Total: [0]", pos:[10, 30], type:"text", click:false, style:"15px Georgia", size:[165, 30]},
-    "O1Stats": { scene: "game", text: "(Op 1) Wins: 0, Money: 100, Total: [0]", pos:[10, 60], type:"text", click:false, style:"15px Georgia", size:[165, 30]},
-    "O2Stats": { scene: "game", text: "(Op 2) Wins: 0, Money: 100, Total: [0]", pos: [10, 90], type: "text", click: false, style: "15px Georgia", size: [165, 30] },
-    "DStats": { scene: "game", text: "(Dealer) Wins: 0, Total: [0]", pos: [10+size[0]/3, 30], type: "text", click: false, style: "15px Georgia", size: [165, 30] },
+    //Game Boxes/Boundaries and the Deck
+    //"DealerSec" : { scene:"game", pos:[size[0]/3, 0], type:"card", click:false, size:[size[0]/3, size[1]/2], empty:true},
+    "DealerSec" : new element("game", [size[0]/3, 0], "card", false, [size[0]/3, size[1]/2], true),
+    "GameSec": new element("game", [0, 0], "card", false, [size[0], size[1]/2], true),
+    //{ scene:"game", pos:[20, (size[1]/3)-imgsize[1]/2], type:"card", click:true/*CHANGE LATER, onclick:"AutoAssign();"*/, size:imgsize, empty:true}
+    "Deck": new element("game", [20, (size[1] / 3) - imgsize[1] / 2], "card", true, imgsize, true, null /*, "", CHANGE LATER, onclick:"AutoAssign();"*/)
 }
 
 /*
@@ -181,12 +187,3 @@ objects =
  * Preset Image Size: 65 by 100
  * 
 */
-
-let gamedata = //Dictionary is empty and randomly assorted
-{
-    "Deck" : [], //Cards face-dowm, the main draw pile
-    "O1" : [], //Opponent Deck #1
-    "O2": [], //Opponent Deck #2
-    "P1": [], //Player Deck #1
-    "P2": [], //Player Deck #2
-}
