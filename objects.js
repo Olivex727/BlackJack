@@ -35,11 +35,13 @@ class card {
 
 //The hand class is a group of cards
 class hand {
-    constructor (name, owner="none") {
+    constructor (name, owner="none", faceup) {
         this.name = name;
         this.deck = []
         this.owner = owner
-        this.standing = false;
+        this.standing = false; //If the player is able to draw more cards
+        this.faceup = faceup; //Number of face-up cards
+
         if(name === "Deck"){
             for(var s in ["S", "D", "C", "H"]){
                 for(var i = 1; i <= 13; i++){
@@ -107,12 +109,12 @@ class player {
         this.deckno = 0; //Set the deck no. to keep track of objects under split decks
         if(name.startsWith("D")){
             this.isDealer = true;
-            this.hand = [new hand(name, name)];
+            this.hand = [new hand(name, name, 1)];
             this.pos[0] = [(size[0]/2)-imgsize[0]/2, (size[1]/6)]
             this.pos[1] = [10 + size[0] / 3, 30];
         }
         else {
-            this.hand = [new hand(name + "_1", name)];
+            this.hand = [new hand(name + "_1", name, 2)];
             this.money = 100;
             this.bet = 0;
             this.wins = 0;
@@ -126,14 +128,38 @@ class player {
         this.stats = new element("game", this.pos[1], "text", false, [165, 30], true, null, "("+name+") Wins: 0, Total: [0]", "", "15px Georgia").init(name+"Stats");
     }
 
-    createHand(){}
+    createHand(){} //Create a new hand
 
-    split(deck){}
-    hit(deck){}
-    stand(deck){}
-    doubledown(deck){} //Double the bet and add 1 extra card
-    runAI(){} //Run the AI descision making
-    insure(deck){} //Insurance
+    runAI() { //Run the AI descision making
+        if (this.isDealer){ //Run dealer algorition
+            if (this.hand[0].getValue() < 16){
+                this.hit(this.hand[0]);
+            }
+            else {
+                this.stand(this.hand[0]);
+            }
+        }
+    }
+
+    split(deck) {
+
+    }
+
+    hit(deck) {
+
+    }
+
+    stand(deck) {
+
+    }
+
+    doubledown(deck) { //Double the bet and add 1 extra card
+
+    }
+
+    insure(deck) { //Insurance
+
+    } 
 }
 
 //Controls the screen elements
@@ -175,6 +201,13 @@ objects =
     //{ scene:"game", pos:[20, (size[1]/3)-imgsize[1]/2], type:"card", click:true/*CHANGE LATER, onclick:"AutoAssign();"*/, size:imgsize, empty:true}
     "Deck": new element("game", [20, (size[1] / 3) - imgsize[1] / 2], "card", true, imgsize, true, null /*, "", CHANGE LATER, onclick:"AutoAssign();"*/)
 }
+
+let players = [
+    new player("D"),
+    new player("O1", 1),
+    new player("P1", 0),
+    new player("O2", 2)
+]
 
 /*
  * Card Naming Scheme:

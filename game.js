@@ -15,10 +15,10 @@ console.log(x);
 //Main game information
 let scene = "title";
 let gameon = false;
-let win = true;
-let score = 0;
-let difficulty = false;
-let moves = 0;
+//let win = true;
+//let score = 0;
+//let difficulty = false;
+//let moves = 0;
 
 //Audio values
 let jazzplay = false;
@@ -33,6 +33,13 @@ let originalpos = [0, 0];
 //Set timer and onload events
 let timer = window.setInterval(function(){update()}, 1000);
 let dragtimer = null;
+
+//Game program variables
+let turn = 0;
+let turncomp = false;
+let endround = false;
+let playerturn = false;
+let turnhand = 0;
 
 //Get Image module
 renderImage = (source, file) => {
@@ -56,10 +63,6 @@ window.onload = function () {
 
     //Create game objects
     let deck = new hand("Deck");
-    let dealer = new player("D");
-    let p1 = new player("P1", 0);
-    let o1 = new player("O1", 1);
-    let o2 = new player("O2", 2);
 
     console.log(objects);
     console.log(objects["D"].scene);
@@ -71,10 +74,40 @@ window.onload = function () {
     window.addEventListener("dblclick", (event) => {
         detectPress(event.clientX, event.clientY, "auto"); //Clicking twice wiil auto drag
     });
+
     setScene();
     update();
     audioplay("click");
 };
+
+//Runs the game logic and turn structure, UUUUUUUHHHHHHh
+function runGame(completedturn){
+
+    if (completedturn && playerturn) {
+        turncomp = true;
+        turnhand++
+        if (turnhand >= players[turn].hand.length) {
+            playerturn = false;
+        }
+    }
+
+    let p = players[turn];
+    for(let ha in players[turn].hand){
+        turncomp = false;
+        turnhand = ha;
+        let h = players[turn].hand[ha];
+        if(!p.isActive) {
+            p.runAI();
+            turncomp = true;
+        }
+        else {
+            playerturn = true;
+            break;
+        }
+    }
+
+    console.log(playerturn);
+}
 
 //Detects and manages the onclick/ondblclick events
 function detectPress(x, y, op=""){
@@ -138,18 +171,18 @@ function dragObj() {
 function update(){
     let time = document.getElementById("time");
     let diff = document.getElementById("diff");
-    let sco = document.getElementById("score");
-    let mov = document.getElementById("moves");
+    //let sco = document.getElementById("score");
+    //let mov = document.getElementById("moves");
     if(gameon){
         time.textContent = (parseInt(time.textContent) + 1).toString();
-        if(!difficulty){diff.textContent = "Easy"}else{diff.textContent = "Hard"}
+        //if(!difficulty){diff.textContent = "Easy"}else{diff.textContent = "Hard"}
     }
     else{
         time.textContent = 0;
         diff.textContent = "Choose an option";
     }
-    sco.textContent = score;
-    mov.textContent = moves;
+    //sco.textContent = score;
+    //mov.textContent = moves;
 }
 
 //Manages Object Placement
@@ -182,6 +215,7 @@ function NewGame(){
     console.log("Loading Game ...");
     scene = "game";
     gameon = true;
+    //runGame(false);
     setScene();
     update();
     console.log("Loaded");
