@@ -130,15 +130,19 @@ class player {
 
     createHand(){} //Create a new hand
 
-    runAI() { //Run the AI descision making
+    runAI(handindex) { //Run the AI descision making
+        let autocommand = "none"; //Determine whether of not a auto animation needs to play
+
         if (this.isDealer){ //Run dealer algorition
-            if (this.hand[0].getValue() < 16){
-                this.hit(this.hand[0]);
+            if (this.hand[handindex].getValue() < 16) {
+                this.hit(this.hand[handindex]);
             }
             else {
-                this.stand(this.hand[0]);
+                this.stand(this.hand[handindex]);
             }
         }
+
+        return autocommand;
     }
 
     split(deck) {
@@ -146,7 +150,7 @@ class player {
     }
 
     hit(deck) {
-
+        console.log(this.name+" Hits on "+deck)
     }
 
     stand(deck) {

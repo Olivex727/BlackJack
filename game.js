@@ -36,10 +36,10 @@ let dragtimer = null;
 
 //Game program variables
 let turn = 0;
-let turncomp = false;
+let turncomp = true;
 let endround = false;
 let playerturn = false;
-let turnhand = 0;
+let turnhand = -1;
 
 //Get Image module
 renderImage = (source, file) => {
@@ -80,33 +80,31 @@ window.onload = function () {
     audioplay("click");
 };
 
-//Runs the game logic and turn structure, UUUUUUUHHHHHHh
-function runGame(completedturn){
+//Runs the game logic and turn structure
+function runGame(){
 
-    if (completedturn && playerturn) {
-        turncomp = true;
-        turnhand++
-        if (turnhand >= players[turn].hand.length) {
-            playerturn = false;
-        }
-    }
-
-    let p = players[turn];
-    for(let ha in players[turn].hand){
+    if (turncomp) { //Check if player/AI has made a move on his hand
         turncomp = false;
-        turnhand = ha;
-        let h = players[turn].hand[ha];
-        if(!p.isActive) {
-            p.runAI();
+        turnhand++
+        if (turnhand >= players[turn].hand.length) { //Finish Player's turn
+            turnhand = 0;
+
+            if (playerturn){ playerturn = false; }
+
+            if (turn >= players.length){ turn = 0; }
+            else { turn++; }
+
+            if (players[turn].isActive){ playerturn = true; }
+        }
+        if (!playerturn) {
+            auto(
+                players[turn].runAI(turnhand)
+            );
             turncomp = true;
         }
-        else {
-            playerturn = true;
-            break;
-        }
     }
-
     console.log(playerturn);
+    //console.log(players[turn].hand[turnhand]);
 }
 
 //Detects and manages the onclick/ondblclick events
@@ -153,8 +151,9 @@ function detectPress(x, y, op=""){
 }
 
 //Automatic movements (Unused) -- Double Click
-function auto(){
+function auto(command){
     console.log("Auto Move");
+    console.log(command)
 }
 
 //Drags the object around the screen, following the mouse
@@ -169,11 +168,13 @@ function dragObj() {
 
 //Updates information below canvas
 function update(){
+
     let time = document.getElementById("time");
     let diff = document.getElementById("diff");
     //let sco = document.getElementById("score");
     //let mov = document.getElementById("moves");
     if(gameon){
+        runGame();
         time.textContent = (parseInt(time.textContent) + 1).toString();
         //if(!difficulty){diff.textContent = "Easy"}else{diff.textContent = "Hard"}
     }
