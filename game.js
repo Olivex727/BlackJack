@@ -1,16 +1,17 @@
 console.log("START");
 
-/*
-function getpy(){
-const x = $.ajax({
-    type: "get",
-    url: "/py",
-    async : true
-}).responseText;
 
-console.log(x);
+function getpy(){
+    const x = $.ajax({
+        type: "get",
+        url: "/py",
+        async : false
+    })
+    console.log(x);
+    console.log(x.responseText);
 }
-*/
+
+//getpy();
 
 //Main game information
 let scene = "title";

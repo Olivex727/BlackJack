@@ -37,17 +37,17 @@ app.get('/css', function (req, res) {
     res.sendfile("style.css");
 });
 
-/*
+
 app.get('/py', function (req, res) {
     const spawn = require('child_process').spawn;
-    const py = spawn('python', ['test.py', 'lol']);
+    const py = spawn('python', ['test.py', '2C']);
     py.stdout.on('data', (data) => {
         //res.send (data.toString().split("\n")[0]);
         res.send('lol');
         console.log(data.toString().split("\n")[0]);
     });
 });
-*/
+
 
 //Host to port 3000
 app.listen(3000, function () {
