@@ -1,6 +1,6 @@
 console.log("START");
 
-
+/*
 function getpy(){
     const x = $.ajax({
         type: "get",
@@ -12,6 +12,7 @@ function getpy(){
 }
 
 //getpy();
+*/
 
 //Main game information
 let scene = "title";
@@ -205,6 +206,7 @@ function setScene(){
                     ctx.strokeRect(objects[obj].pos[0], objects[obj].pos[1], objects[obj].size[0], objects[obj].size[1]);
                 }
                 else{
+                    //for
                     //ctx.drawImage(renderImage("background2", "bck"), objects[obj].pos[0], objects[obj].pos[1], objects[obj].size[0], objects[obj].size[1]);
                 }
             }

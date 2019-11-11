@@ -2,7 +2,20 @@
 var express = require('express');
 var app = express();
 var fs = require("fs");
-var ri = require('readimage');
+//var ri = require('readimage');
+
+//var cloudinary = require("cloudinary");
+//var cl = new cloudinary.Cloudinary({ cloud_name: "bj-ow", secure: true });
+//http://res.cloudinary.com/bj-ow/image/upload/sample.jpg
+
+/*
+let options = {
+    mode: 'text',
+    pythonPath: 'test.py',
+    pythonOptions: ['-u'], // get print results in real-time
+    args: ['1', '2', '3']
+};
+*/
 
 //Get the path of the server and host a static
 var path = require('path');
@@ -38,7 +51,15 @@ app.get('/css', function (req, res) {
 });
 
 
-app.get('/py', function (req, res) {
+app.get('/image', function (req, res) {
+    
+    //res.sendfile()
+
+    //var tag = cl.imageTag("card");
+    //tag.toHtml();
+    //crop: ‘scale’,  width: 400
+
+    /*
     const spawn = require('child_process').spawn;
     const py = spawn('python', ['test.py', '2C']);
     py.stdout.on('data', (data) => {
@@ -46,6 +67,13 @@ app.get('/py', function (req, res) {
         res.send('lol');
         console.log(data.toString().split("\n")[0]);
     });
+    
+    PythonShell.runString('test.py', options, function (err, results) {
+        if (err) throw err;
+        console.log('finished');
+        console.log('results: %j', results);
+        res.send('lol');
+    });*/
 });
 
 
