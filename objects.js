@@ -31,6 +31,10 @@ class card {
     move(newhand){
         this.location = newhand;
     }
+
+    getName(){
+        return this.number + this.suite;
+    }
 }
 
 //The hand class is a group of cards
@@ -99,6 +103,15 @@ class hand {
         }
         
     }
+
+    getCardArr(){
+        let arrCards = []
+        for(let c in this.deck){
+            let card = this.deck[c];
+            arrCards.push(card.getName());
+        }
+        return arrCards;
+    }
 }
 
 //Player class contains all of the movement operations
@@ -126,6 +139,13 @@ class player {
         }
         this.elements = [new element("game", this.pos[0], "card", true, imgsize, true).init(name)];
         this.stats = new element("game", this.pos[1], "text", false, [165, 30], true, null, "("+name+") Wins: 0, Total: [0]", "", "15px Georgia").init(name+"Stats");
+    }
+
+    sendElementInfo(hand){
+        //this.hand[hand].deck.push(new card(13, 'S'));
+        //this.hand[hand].deck.push(new card(11, 'D'));
+        this.elements[hand].addhandvalues(this.hand[hand].getCardArr())
+        
     }
 
     createHand(){} //Create a new hand
@@ -176,11 +196,24 @@ class element {
     //Adds the element to the objects dictionaty
     init(key){
         objects[key] = this
+        this.key = key;
         return this;
     }
 
-    updateimg(newimg){} //Update the image
-    requestimg(img){} //Request image from python file
+    //Update the element
+    updateelement(){
+        objects[this.key] = this
+        return this;
+    }
+
+    addhandvalues(hand){
+        this.handvals = hand;
+        console.log("HAND: " + hand);
+    }
+    //requestimg(img){} //Request image from python file
+    //setname(name){
+    //    this.name = name;
+    //}
 }
 
 //Screen Info
@@ -203,7 +236,7 @@ objects =
     "DealerSec" : new element("game", [size[0]/3, 0], "card", false, [size[0]/3, size[1]/2], true),
     "GameSec": new element("game", [0, 0], "card", false, [size[0], size[1]/2], true),
     //{ scene:"game", pos:[20, (size[1]/3)-imgsize[1]/2], type:"card", click:true/*CHANGE LATER, onclick:"AutoAssign();"*/, size:imgsize, empty:true}
-    "Deck": new element("game", [20, (size[1] / 3) - imgsize[1] / 2], "card", true, imgsize, true, null /*, "", CHANGE LATER, onclick:"AutoAssign();"*/)
+    "Deck": new element("game", [20, (size[1] / 3) - imgsize[1] / 2], "card", false, imgsize, false, null /*, "", CHANGE LATER, onclick:"AutoAssign();"*/)
 }
 
 let players = [

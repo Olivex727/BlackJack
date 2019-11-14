@@ -63,6 +63,7 @@ window.addEventListener("mousemove", (event) => {
 //On window load
 window.onload = function () {
 
+    players[0].sendElementInfo(0);
     //Create game objects
     let deck = new hand("Deck");
 
@@ -77,7 +78,7 @@ window.onload = function () {
         detectPress(event.clientX, event.clientY, "auto"); //Clicking twice wiil auto drag
     });
 
-    setScene();
+    window.setInterval(function () { setScene();}, 1000)
     update();
     audioplay("click");
 };
@@ -133,9 +134,9 @@ function detectPress(x, y, op=""){
                             coords = [x - objects[obj].pos[0], y - objects[obj].pos[1]];
                             if (op === "manual") {
                                 cardDrag = true;
-                                dragtimer = window.setInterval(function(){dragObj()}, 10);
+                                dragtimer = window.setInterval(function(){/*dragObj()*/}, 10);
                                 originalpos = objects[obj].pos;
-                                console.log(originalpos);
+                                //console.log(originalpos);
                             }
                             else if (op === "auto"){
                                 objects[drag].pos = originalpos;
@@ -206,6 +207,10 @@ function setScene(){
                     ctx.strokeRect(objects[obj].pos[0], objects[obj].pos[1], objects[obj].size[0], objects[obj].size[1]);
                 }
                 else{
+                    if(obj = "Deck"){
+                        ctx.drawImage(renderImage("2C", "cards"), objects[obj].pos[0], objects[obj].pos[1], imgsize[0], imgsize[1]);
+                        console.log("Printed: " +obj)
+                    }
                     //for
                     //ctx.drawImage(renderImage("background2", "bck"), objects[obj].pos[0], objects[obj].pos[1], objects[obj].size[0], objects[obj].size[1]);
                 }
