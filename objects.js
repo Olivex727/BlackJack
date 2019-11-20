@@ -11,7 +11,7 @@ class card {
     constructor(num, suite) {
         this.number = num;
         this.suite = suite;
-        this.name = num+"_"+suite;
+        this.name = num+suite;
         if(num < 11){
             this.value = num;
         }
@@ -92,24 +92,29 @@ class hand {
         return total;
     }
 
-    //Moves cards to a new location/card hand
-    movecard(newhand, card){
-        for(var i in this.deck){
-            if(this.deck[i].name === card){
-                this.deck[i].move(newhand.name);
-                newhand.deck.push(this.deck[i]);
-                this.deck.splice(i, 1);
-            }
-        }
-        
-    }
-
     getCardArr(){
         let arrCards = []
         for(let c in this.deck){
             let card = this.deck[c];
             arrCards.push(card.getName());
         }
+        return arrCards;
+    }
+
+    pushCard(card){
+        this.deck.push(card);
+    }
+
+    getCardName(items){
+        let arrCards = [];
+        if(items === null){ items = this.deck.length;}
+        //console.log(items);
+        for(let i = 0; i < items; i++){
+            if (i >= this.deck.length){ break; } //Failsafe
+            //console.log(this.deck[i].getName());
+            arrCards.push(this.deck[i].getName());
+        }
+        //console.log(arrCards);
         return arrCards;
     }
 }
@@ -137,7 +142,7 @@ class player {
         if(name.startsWith("P")) {
             this.isActive = true;
         }
-        this.elements = [new element("game", this.pos[0], "card", true, imgsize, true).init(name)];
+        this.elements = [new element("game", this.pos[0], "card", true, imgsize, false).init(name)];
         this.stats = new element("game", this.pos[1], "text", false, [165, 30], true, null, "("+name+") Wins: 0, Total: [0]", "", "15px Georgia").init(name+"Stats");
     }
 
@@ -184,13 +189,33 @@ class player {
     insure(deck) { //Insurance
 
     } 
+
+    //Moves cards to a new location/card hand
+    movecard(newhand, oldhand, card) {
+        for (var i in this.deck) {
+            if (this.hand[i].name === card) {
+                this.hand[i].move(newhand.name);
+                newhand.deck.push(this.deck[i]);
+                this.hand.splice(i, 1);
+            }
+        }
+
+    }
+
+    pushCard(card, deck) {
+        this.hand[deck].pushCard(card);
+    }
+
+    returnCards(items, deck) {
+        return this.hand[deck].getCardName(items);
+    }
 }
 
 //Controls the screen elements
 class element {
     constructor(scene, pos, type, click, size, empty = true, image = "", text = "", onclick = "", style = "15px Georgia") {
         this.scene = scene; this.pos = pos; this.type = type; this.click = click; this.onclick = onclick;
-        this.size = size; this.style = style; this.empty = empty; this.text = text; this.image = image; this.name = name;
+        this.size = size; this.style = style; this.empty = empty; this.text = text; this.image = image;
     }
 
     //Adds the element to the objects dictionaty
@@ -210,6 +235,10 @@ class element {
         this.handvals = hand;
         console.log("HAND: " + hand);
     }
+
+    //addName(name){
+    //    this.name = name;
+    //}
     //requestimg(img){} //Request image from python file
     //setname(name){
     //    this.name = name;

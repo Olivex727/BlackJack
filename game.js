@@ -81,6 +81,12 @@ window.onload = function () {
     window.setInterval(function () { setScene();}, 1000)
     update();
     audioplay("click");
+
+    console.log(players[0]);
+    players[0].pushCard(new card(2, 'S'), 0);
+    players[0].pushCard(new card(9, 'H'), 0);
+    players[0].pushCard(new card(13, 'C'), 0);
+    console.log(players);
 };
 
 //Runs the game logic and turn structure
@@ -207,9 +213,21 @@ function setScene(){
                     ctx.strokeRect(objects[obj].pos[0], objects[obj].pos[1], objects[obj].size[0], objects[obj].size[1]);
                 }
                 else{
-                    if(obj = "Deck"){
+                    if(obj === "Deck"){
                         ctx.drawImage(renderImage("2C", "cards"), objects[obj].pos[0], objects[obj].pos[1], imgsize[0], imgsize[1]);
-                        console.log("Printed: " +obj)
+                        //console.log("Printed: " +obj)
+                    }
+                    else {
+                        for(let p in players){
+                            if(obj === players[p].name){
+                                let cardprint = players[p].returnCards(null, 0);
+                                for(let i = 0; i < cardprint.length; i++){
+                                    //let nudge = 
+                                    ctx.drawImage(renderImage(cardprint[i], "cards"), objects[obj].pos[0], objects[obj].pos[1]+(15 * i), imgsize[0], imgsize[1]);
+                                }
+                                //console.log(cardprint);
+                            }
+                        }
                     }
                     //for
                     //ctx.drawImage(renderImage("background2", "bck"), objects[obj].pos[0], objects[obj].pos[1], objects[obj].size[0], objects[obj].size[1]);
