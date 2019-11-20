@@ -44,7 +44,7 @@ class hand {
         this.deck = []
         this.owner = owner
         this.standing = false; //If the player is able to draw more cards
-        this.faceup = faceup; //Number of face-up cards
+        this.faceup = faceup; //Number of face-up cards}
 
         if(name === "Deck"){
             for(var s in ["S", "D", "C", "H"]){
@@ -92,6 +92,7 @@ class hand {
         return total;
     }
 
+    /* Defunct
     getCardArr(){
         let arrCards = []
         for(let c in this.deck){
@@ -100,19 +101,27 @@ class hand {
         }
         return arrCards;
     }
+    */
 
     pushCard(card){
         this.deck.push(card);
     }
 
-    getCardName(items){
+    getCardName(items, showfacedown=false){
         let arrCards = [];
         if(items === null){ items = this.deck.length;}
         //console.log(items);
-        for(let i = 0; i < items; i++){
+        for (let i = items-1; i >= 0; i--) {
             if (i >= this.deck.length){ break; } //Failsafe
-            //console.log(this.deck[i].getName());
-            arrCards.push(this.deck[i].getName());
+            if(showfacedown){
+                arrCards.push(this.deck[i].getName());
+            }
+            else if (i < items - this.faceup) {
+                arrCards.push(this.deck[i].getName());
+            }
+            else {
+                arrCards.push('back');
+            }
         }
         //console.log(arrCards);
         return arrCards;
@@ -132,7 +141,7 @@ class player {
             this.pos[1] = [10 + size[0] / 3, 30];
         }
         else {
-            this.hand = [new hand(name + "_1", name, 2)];
+            this.hand = [new hand(name + "_1", name, 52)];
             this.money = 100;
             this.bet = 0;
             this.wins = 0;

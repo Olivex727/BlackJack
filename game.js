@@ -218,7 +218,7 @@ function setScene(){
                 }
                 else{
                     if(obj === "Deck"){
-                        ctx.drawImage(renderImage("2C", "cards"), objects[obj].pos[0], objects[obj].pos[1], imgsize[0], imgsize[1]);
+                        ctx.drawImage(renderImage("back", "cards"), objects[obj].pos[0], objects[obj].pos[1], imgsize[0], imgsize[1]);
                         //console.log("Printed: " +obj)
                     }
                     else {
