@@ -128,7 +128,7 @@ class player {
         if(name.startsWith("D")){
             this.isDealer = true;
             this.hand = [new hand(name, name, 1)];
-            this.pos[0] = [(size[0]/2)-imgsize[0]/2, (size[1]/6)]
+            this.pos[0] = [(size[0]/2)/*-imgsize[0]/2*/, (size[1]/6)]
             this.pos[1] = [10 + size[0] / 3, 30];
         }
         else {
@@ -136,24 +136,27 @@ class player {
             this.money = 100;
             this.bet = 0;
             this.wins = 0;
-            this.pos[0] = [((2*pos + 1)*size[0]/6)-imgsize[0]/2, (size[1]/2)+imgsize[1]];
+            this.pos[0] = [((2*pos + 1)*size[0]/6)/*-imgsize[0]/2*/, (size[1]/2)+imgsize[1]];
             this.pos[1] = [10, 30*(pos+1)];
         }
         if(name.startsWith("P")) {
             this.isActive = true;
         }
-        this.elements = [new element("game", this.pos[0], "card", true, imgsize, false).init(name)];
+        this.elements = new element("game", this.pos[0], "card", true, imgsize, false).init(name);
         this.stats = new element("game", this.pos[1], "text", false, [165, 30], true, null, "("+name+") Wins: 0, Total: [0]", "", "15px Georgia").init(name+"Stats");
     }
 
+    //Defunct
     sendElementInfo(hand){
         //this.hand[hand].deck.push(new card(13, 'S'));
         //this.hand[hand].deck.push(new card(11, 'D'));
-        this.elements[hand].addhandvalues(this.hand[hand].getCardArr())
-        
+        //this.elements[hand].addhandvalues(this.hand[hand].getCardArr())
     }
 
-    createHand(){} //Create a new hand
+    createHand(){
+        let handlength = this.hand.length;
+        this.hand.push(new hand(name+"_"+handlength, name, 0));
+    } //Create a new hand
 
     runAI(handindex) { //Run the AI descision making
         let autocommand = "none"; //Determine whether of not a auto animation needs to play
@@ -208,6 +211,12 @@ class player {
 
     returnCards(items, deck) {
         return this.hand[deck].getCardName(items);
+    }
+
+    getHandInfo(com) {
+        if(com === "size"){
+            return this.hand.length;
+        }
     }
 }
 

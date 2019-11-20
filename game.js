@@ -86,6 +86,10 @@ window.onload = function () {
     players[0].pushCard(new card(2, 'S'), 0);
     players[0].pushCard(new card(9, 'H'), 0);
     players[0].pushCard(new card(13, 'C'), 0);
+    players[0].createHand();
+    players[0].pushCard(new card(12, 'S'), 1);
+    players[0].pushCard(new card(8, 'D'), 1);
+    players[0].pushCard(new card(11, 'S'), 1);
     console.log(players);
 };
 
@@ -220,10 +224,15 @@ function setScene(){
                     else {
                         for(let p in players){
                             if(obj === players[p].name){
-                                let cardprint = players[p].returnCards(null, 0);
-                                for(let i = 0; i < cardprint.length; i++){
-                                    //let nudge = 
-                                    ctx.drawImage(renderImage(cardprint[i], "cards"), objects[obj].pos[0], objects[obj].pos[1]+(15 * i), imgsize[0], imgsize[1]);
+                                let handsize = players[p].getHandInfo("size");
+                                let handlen = ((imgsize[0] * (handsize)) + (20 * (handsize-1)))/2;
+                                //console.log(handlen);
+                                for (let j = 0; j < handsize; j++) {
+                                    let cardprint = players[p].returnCards(null, j);
+                                    let newposx = objects[obj].pos[0] - (handlen) + (j * (20+imgsize[0]));
+                                    for(let i = 0; i < cardprint.length; i++) {
+                                        ctx.drawImage(renderImage(cardprint[i], "cards"), newposx, objects[obj].pos[1]+(15 * i), imgsize[0], imgsize[1]);
+                                    }
                                 }
                                 //console.log(cardprint);
                             }
