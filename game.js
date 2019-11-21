@@ -17,6 +17,7 @@ function getpy(){
 //Main game information
 let scene = "title";
 let gameon = false;
+let gamestart = true;
 //let win = true;
 //let score = 0;
 //let difficulty = false;
@@ -65,7 +66,7 @@ window.onload = function () {
 
     players[0].sendElementInfo(0);
     //Create game objects
-    let deck = new hand("Deck");
+    deck = new hand("Deck");
 
     console.log(objects);
     console.log(objects["D"].scene);
@@ -82,6 +83,7 @@ window.onload = function () {
     update();
     audioplay("click");
 
+    /*
     console.log(players[0]);
     players[0].pushCard(new card(2, 'S'), 0);
     players[0].pushCard(new card(9, 'H'), 0);
@@ -90,11 +92,32 @@ window.onload = function () {
     players[0].pushCard(new card(12, 'S'), 1);
     players[0].pushCard(new card(8, 'D'), 1);
     players[0].pushCard(new card(11, 'S'), 1);
+    */
     console.log(players);
 };
 
 //Runs the game logic and turn structure
 function runGame(){
+    
+    if (gamestart){
+
+        gamestart = false;
+        deck.shuffle(10000);
+
+        for (p in players) {
+            /*
+            if(players[p].name === "D"){
+                players[0].pushCard(new card(8, 'D'), 0);
+                players[0].pushCard(new card(8, 'S'), 0);
+            }
+            
+            else{
+            */
+                players[p].pushCard(deck.drawCard(), 0);
+                players[p].pushCard(deck.drawCard(), 0);
+            //}
+        }
+    }
 
     if (turncomp) { //Check if player/AI has made a move on his hand
         turncomp = false;
@@ -110,9 +133,11 @@ function runGame(){
             if (players[turn].isActive){ playerturn = true; }
         }
         if (!playerturn) {
-            auto(
-                players[turn].runAI(turnhand)
-            );
+            //console.log(players[turn].name)
+            let AIout = players[turn].runAI(turnhand);
+            //console.log(AIout[0] + "_"+ turnhand)
+            if (AIout[0]){ turnhand--; }
+            else{ auto(AIout[1]); }
             turncomp = true;
         }
     }
