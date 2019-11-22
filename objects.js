@@ -6,7 +6,9 @@ let objects = {};
 
 let deck = null;
 
-let agro = [1, 0]; //Error with double clicking in new scence -- Since it only affects one box, it is not necessary to be fixed
+let agro = [1, 1]; //Error with double clicking in new scence -- Since it only affects one box, it is not necessary to be fixed
+
+let totaldecks = 4;
 
 //Create object classes
 
@@ -164,6 +166,8 @@ class player {
         this.deckno = 0; //Set the deck no. to keep track of objects under split decks
         this.agro = agression;
         this.wins = 0;
+        this.money = 0;
+        this.isActive = false; this.isDealer = false;
         if(name.startsWith("D")){
             this.isDealer = true;
             this.hand = [new hand(name + "_1", name, 1/* Change to One Later */)];
@@ -238,17 +242,18 @@ class player {
                 this.stand(handindex);
             }
             
-            else {
+            else if (!this.hand[handindex].standDeck('check')) {
                 this.hit(handindex);
                 command[0] = this.checksplit(handindex);
             }
+            else if (this.hand[handindex].standDeck('check')){this.stand(handindex);}
         }
 
         return command;
     }
 
     checksplit(gamedeck) {
-        console.log("CHECK SPLIT: " + this.hand[gamedeck].doubledUp());
+        //console.log("CHECK SPLIT: " + this.hand[gamedeck].doubledUp());
         return this.hand[gamedeck].doubledUp();
     }
 
@@ -256,6 +261,7 @@ class player {
         console.log(this.name + " Splits on " + this.hand[gamedeck].name);
         this.hand.splice(gamedeck+1, 0, new hand(this.name + "_" + (gamedeck + 1), name, 0));
         this.pushCard(this.hand[gamedeck].drawCard(), gamedeck+1);
+        totaldecks++;
     }
 
     hit(gamedeck) {
@@ -333,7 +339,7 @@ class player {
 class element {
     constructor(scene, pos, type, click, size, empty = true, image = "", text = "", onclick = "", style = "15px Georgia") {
         this.scene = scene; this.pos = pos; this.type = type; this.click = click; this.onclick = onclick;
-        this.size = size; this.style = style; this.empty = empty; this.text = text; this.image = image;
+        this.size = size; this.style = style; this.empty = empty; this.text = text; this.image = image; this.active = false;
     }
 
     //Adds the element to the objects dictionaty
@@ -358,13 +364,11 @@ class element {
         console.log("HAND: " + hand);
     }
 
-    //addName(name){
-    //    this.name = name;
-    //}
-    //requestimg(img){} //Request image from python file
-    //setname(name){
-    //    this.name = name;
-    //}
+    activateButton(set) {
+        if (this.type === "button") {
+            this.active = set;
+        }
+    }
 }
 
 //Screen Info
@@ -387,6 +391,18 @@ objects =
     "DealDiff": new element("ops", [10, 50 + size[1] / 4], "text", true, [380, 30], true, null, "Dealer Difficulty: 1 (Click to change)", "ChangeDifficulty(true);", "30px Georgia"),
     "OppDiff": new element("ops", [10, 50 + size[1] / 2], "text", true, [380, 30], true, null, "Opponent Difficulty: 1 (Click to change)", "ChangeDifficulty(false);", "30px Georgia"),
     "BackOps": new element("ops", [10, 50 + size[1] * 3 / 4], "text", true, [380, 30], true, null, "< Back", "Options(false);", "20px Georgia"),
+
+    //Game Button Management
+    "Hit Button": new element("game", [10 +(2*size[0]/3), 10], "button", true, [80, 30], true, null, "Hit", "buttonPress('hit');", "20px Arial"),
+    "Stand Button": new element("game", [110 + (2 * size[0] / 3), 10], "button", true, [80, 30], true, null, "Stand", "buttonPress('stand');", "20px Arial"),
+    "DD Button": new element("game", [10 + (2 * size[0] / 3), 50], "button", true, [80, 30], true, null, "DD", "buttonPress('dd');", "20px Arial"),
+    "Split Button": new element("game", [110 + (2 * size[0] / 3), 50], "button", true, [80, 30], true, null, "Split", "buttonPress('split');", "20px Arial"),
+    "B+1 Button": new element("game", [10 + (2 * size[0] / 3), 90], "button", true, [80, 30], true, null, "Bet+1", "buttonPress('b_+1');", "20px Arial"),
+    "B-1 Button": new element("game", [110 + (2 * size[0] / 3), 90], "button", true, [80, 30], true, null, "Bet-1", "buttonPress('b_-1');", "20px Arial"),
+    "B+10 Button": new element("game", [10 + (2 * size[0] / 3), 130], "button", true, [80, 30], true, null, "Bet+10", "buttonPress('b_+10');", "20px Arial"),
+    "B-10 Button": new element("game", [110 + (2 * size[0] / 3), 130], "button", true, [80, 30], true, null, "Bet-10", "buttonPress('b_-10');", "20px Arial"),
+
+    "StandCount": new element("game", [10 + (2 * size[0] / 3), 200], "text", false, [380, 30], true, null, "Standing Decks: 0", "", "20px Georgia"),
 
     //Game Boxes/Boundaries and the Deck
     //"DealerSec" : { scene:"game", pos:[size[0]/3, 0], type:"card", click:false, size:[size[0]/3, size[1]/2], empty:true},

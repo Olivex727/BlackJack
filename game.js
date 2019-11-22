@@ -17,9 +17,10 @@ function getpy(){
 //Main game information
 let scene = "title";
 let gameon = false;
+//let gamerun = false;
 let gamestart = true;
-//let win = true;
 let score = 0;
+let standing = 0;
 //let difficulty = false;
 //let moves = 0;
 
@@ -34,7 +35,7 @@ let coords = [0, 0];
 let originalpos = [0, 0];
 
 //Set timer and onload events
-let timer = window.setInterval(function(){update()}, 1000);
+let timer = window.setInterval(function(){if(gameon){update()}}, 1000);
 let dragtimer = null;
 
 //Game program variables
@@ -82,44 +83,92 @@ window.onload = function () {
     window.setInterval(function () { setScene();}, 1000)
     update();
     audioplay("click");
-
-    /*
-    console.log(players[0]);
-    players[0].pushCard(new card(2, 'S'), 0);
-    players[0].pushCard(new card(9, 'H'), 0);
-    players[0].pushCard(new card(13, 'C'), 0);
-    players[0].createHand();
-    players[0].pushCard(new card(12, 'S'), 1);
-    players[0].pushCard(new card(8, 'D'), 1);
-    players[0].pushCard(new card(11, 'S'), 1);
-    */
     console.log(players);
 };
 
 //Runs the game logic and turn structure
 function runGame(){
     
+    //console.log(totaldecks);
+    if(standing >= totaldecks){
+        gameon = false;
+
+        //Find the winners of the round
+        let dealerval = 0;
+        let dealerindex = 0;
+        let dealerwin = false;
+        let playerindex = 0;
+        for (p in players) {
+            if (players[p].name === "D") { //Find the greatest dealer value under or at 21
+                dealerindex = p;
+                for (h in players[p].hand){
+                    if (dealerval < players[p].hand[h].getValue() && players[p].hand[h].getValue() <= 21) {
+                        dealerval = players[p].hand[h].getValue();
+                    }
+                }
+            }
+        }
+        let playerval = 0;
+        for (p in players) {
+            //console.log(players[p]);
+            if(players[p].isActive){playerindex = p;}
+            for (h in players[p].hand){
+                //console.log(players[p].hand[h])
+                //console.log(players[p].hand[h].name)
+                playerval = players[p].hand[h].getValue();
+                if (playerval == 21) {
+                    if (players[p].hand[h].deck[0].number === '1' || dealerval == 21){
+                        console.log(players[p].name + " Won 1:1 (NTBJ) on " + players[p].hand[h].name);
+                        players[p].wins++;
+                        players[p].money += 2*players[p].bet;
+                        dealerwin = true;
+                    }
+                    else {
+                        console.log(players[p].name + " Won 3:2 on " + players[p].hand[h].name);
+                        players[p].wins++;
+                        players[p].money += Math.round(players[p].bet*2.5);
+                    }
+                }
+                else{
+                    if (playerval > dealerval){
+                        console.log(players[p].name + " Won 1:1 on " + players[p].hand[h].name);
+                        players[p].wins++;
+                        players[p].money += 2*players[p].bet;
+                    }
+                    if (playerval == dealerval) {
+                        console.log(players[p].name + " Tied on " + players[p].hand[h].name);
+                        dealerwin = true;
+                        players[p].money += players[p].bet;
+                    }
+                    if (playerval < dealerval) {
+                        console.log(players[p].name + " Lost on " + players[p].hand[h].name);
+                        //players[p].money -= players[p].bet;
+                        dealerwin = true;
+                    }
+                }
+            }
+        }
+
+        totaldecks = 4;
+
+        if (dealerwin){ players[dealerindex].wins++;}
+
+        if(players[playerindex].money > 0) { reset(false); gamestart = true; } else { scene = "title"; reset(true); }
+        
+    }
+
     if (gamestart){
 
         gamestart = false;
         deck.shuffle(10000);
 
         for (p in players) {
-            /*
-            if(players[p].name === "D"){
-                players[0].pushCard(new card(8, 'D'), 0);
-                players[0].pushCard(new card(8, 'S'), 0);
-            }
-            
-            else{
-            */
-                players[p].pushCard(deck.drawCard(), 0);
-                players[p].pushCard(deck.drawCard(), 0);
-            //}
+            players[p].pushCard(deck.drawCard(), 0);
+            players[p].pushCard(deck.drawCard(), 0);
         }
     }
 
-    if (turncomp) { //Check if player/AI has made a move on his hand
+    if (turncomp && gameon) { //Check if player/AI has made a move on his hand
         turncomp = false;
         turnhand++
         if (turnhand >= players[turn].hand.length) { //Finish Player's turn
@@ -127,7 +176,7 @@ function runGame(){
 
             if (playerturn){ playerturn = false; }
 
-            if (turn >= players.length){ turn = 0; }
+            if (turn >= players.length - 1){ turn = 0; }
             else { turn++; }
 
             if (players[turn].isActive){ playerturn = true; }
@@ -145,12 +194,61 @@ function runGame(){
     //console.log(players[turn].hand[turnhand]);
 }
 
+function reset(hardreset){
+    if (hardreset){
+        players = [
+            new player("D", null, agro[0]),
+            new player("O1", 0, agro[1]),
+            new player("P1", 1),
+            new player("O2", 2, agro[1])
+        ]
+    }
+    else {
+        for(p in players){
+            if (players[p].isDealer){players[p].hand = [new hand(players[p].name + "_1", players[p].name, 1)];}
+            else {
+                players[p].hand = [new hand(players[p].name + "_1", players[p].name, 0)];
+                players[p].bet = 0;
+                if (players[p].money > 0){
+                    let r = 5;
+                    if (!players[p].isActive){ r = Math.round(players[p].money/2 * (Math.random() + 0.5)); }
+                    while (!players[p].placebet(r, true)) {
+                        if (!players[p].isActive){ r = Math.round(players[p].money/2 * (Math.random() + 0.5)); } else { r--; }
+                    }
+                    players[p].placebet(r);
+                }
+                else {
+                    let n = players.splice(p, 1).name;
+                    for (obj in objects){
+                        if (obj === n+"stats"){
+                            objects[obj].text = "Bankrupt! Wins: " + players[p].wins;
+                        }
+                    }
+                }
+            }
+        }
+        gameon = true;
+    }
+    deck = new hand("Deck");
+    update();
+    
+}
+
 //Updates the status of the players' info
 function updateStats(){
+    standing = 0;
     for (p in players){
         let player = players[p];
+        for (h in player.hand){
+            if (player.hand[h].standDeck('check')){ standing++; }
+        }
         if(player.isDealer){ player.stats.changetext("(" + player.name + ") Wins: " + player.wins); }
         else { player.stats.changetext("(" + player.name + ") Wins: " + player.wins + ", Bet: " + player.bet + ", Money: " + player.money);}
+    }
+    for (obj in objects){
+        if (obj === "StandCount") {
+            objects[obj].text = "Standing Decks: "+standing;
+        }
     }
 }
 
@@ -187,7 +285,9 @@ function detectPress(x, y, op=""){
                                 auto();
                             }
                         }
-                        else {eval(objects[obj].onclick)}
+                        else if (objects[obj].active || objects[obj].type !== "button") {
+                            eval(objects[obj].onclick)
+                        }
                     }
                 }
 
@@ -215,28 +315,54 @@ function dragObj() {
 
 //Updates information below canvas
 function update(){
+    //Update text bars
     updateStats();
+
+    //Update the buttons
+    let player = null;
+    for (p in players) { //Retreive player data -- read only necessary
+        if(players[p].isActive){ player = players[p]; }
+    }
+
+    for (obj in objects){
+        if(objects[obj].type === "button" && playerturn){
+            if ((!player.hand[turnhand].standDeck('check') &&
+                ((obj === "Hit Button" && player.hand[turnhand].getValue() < 21) ||
+                (obj === "Split Button" && player.checksplit(turnhand)) ||
+                (obj === "DD Button" && player.placebet(player.bet, true) && player.hand[turnhand].doubledUp() && player.hand[turnhand].getValue() < 21) ||
+                (obj === "B+1 Button" && player.placebet(1, true) && player.hand[turnhand].deck.length == 2) ||
+                (obj === "B-1 Button" && player.placebet(-1, true) && player.hand[turnhand].deck.length == 2) ||
+                (obj === "B+10 Button" && player.placebet(10, true) && player.hand[turnhand].deck.length == 2) ||
+                (obj === "B-10 Button" && player.placebet(-10, true) && player.hand[turnhand].deck.length == 2))
+                ) || (obj === "Stand Button"))
+            { 
+                objects[obj].active = true;
+            }
+            else {
+                objects[obj].active = false;
+            }
+        }
+        else {
+            objects[obj].active = false;
+        }
+    }
+
+    //Update the out-of canvas elements
     let time = document.getElementById("time");
-    //let diff = document.getElementById("diff");
     let sco = document.getElementById("score");
-    //let mov = document.getElementById("moves");
     if(gameon){
         runGame();
         time.textContent = (parseInt(time.textContent) + 1).toString();
         for (p in players) {
             if(players[p].isActive){
-                score.textContent = (players[p].money * players[p].wins).toString();
+                sco.textContent = (players[p].money + players[p].wins).toString();
             }
         }
-        //if(!difficulty){diff.textContent = "Easy"}else{diff.textContent = "Hard"}
     }
     else{
         time.textContent = 0;
-        score.textContent = 0;
-        //diff.textContent = "Choose an option";
+        sco.textContent = 0;
     }
-    //sco.textContent = score;
-    //mov.textContent = moves;
 }
 
 //Manages Object Placement
@@ -252,8 +378,26 @@ function setScene(){
                 ctx.font = objects[obj].style;
                 ctx.fillText(objects[obj].text, objects[obj].pos[0], objects[obj].pos[1]);
             }
+            if (objects[obj].type === "button") {
+                
+                if (objects[obj].active) {
+                    ctx.fillStyle = "#c80a0a";
+                }
+                else {
+                    ctx.fillStyle = "#b46464";
+                }
+                ctx.fillRect(objects[obj].pos[0], objects[obj].pos[1], objects[obj].size[0], objects[obj].size[1]);
+                ctx.strokeStyle = "#000000";
+                ctx.lineWidth = 5;
+                ctx.strokeRect(objects[obj].pos[0], objects[obj].pos[1], objects[obj].size[0], objects[obj].size[1]);
+                ctx.fillStyle = "#ffffff";
+                ctx.font = objects[obj].style;
+                ctx.fillText(objects[obj].text, objects[obj].pos[0] + 5, objects[obj].pos[1] + ((3/4)*objects[obj].size[1]));
+            }
             if (objects[obj].type === "card"){
                 if (objects[obj].empty){
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = "#ffff00";
                     ctx.strokeRect(objects[obj].pos[0], objects[obj].pos[1], objects[obj].size[0], objects[obj].size[1]);
                 }
                 else{
@@ -286,11 +430,44 @@ function setScene(){
     }
 }
 
+function buttonPress(input){
+    console.log("Player input");
+    let finised = true;
+    let player = players[turn];
+    if (input === 'hit'){
+        player.hit(turnhand);
+        if(player.checksplit(turnhand)){finised = false;}
+    }
+    if (input === 'stand') {
+        player.stand(turnhand);
+    }
+    if (input === 'split') {
+        player.split(turnhand);
+        finised = false;
+    }
+    if (input === 'dd') {
+        player.doubledown(turnhand);
+    }
+    if (input.startsWith("b")) {
+       let betplace = input.split("_")[1];
+       player.placebet(parseInt(betplace));
+       finised = false;
+       /*
+       if (inarr[1] === "+"){
+           if (inarr[2] === "1"){ player.bet(1); }
+           if (inarr[2] === "10"){ player.bet(10); }
+       }
+       */
+    }
+    turncomp = finised;
+}
+
 //Loads a new game
 function NewGame(){
     console.log("Loading Game ...");
     scene = "game";
     gameon = true;
+    gamestart = true;
     //runGame(false);
     setScene();
     update();
