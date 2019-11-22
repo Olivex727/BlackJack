@@ -125,7 +125,7 @@ class hand {
     doubledUp(){
         //console.log(this.deck.length)
         //console.log(this.deck[0].value)
-        if (this.deck.length == 2 && this.deck[0].value == this.deck[1].value){
+        if (this.deck.length == 2 && this.deck[0].number == this.deck[1].number){
             return true;
         }
         else {
@@ -161,22 +161,26 @@ class player {
         this.pos = [[0, 0], [0, 0]]; //Set the standard position of screen elements
         this.deckno = 0; //Set the deck no. to keep track of objects under split decks
         this.agro = agression;
+        this.wins = 0;
         if(name.startsWith("D")){
             this.isDealer = true;
             this.hand = [new hand(name + "_1", name, 0/* Change to One Later */)];
             this.pos[0] = [(size[0]/2)/*-imgsize[0]/2*/, (size[1]/6) - 20]
             this.pos[1] = [10 + size[0] / 3, 30];
+            //this.bet = 10;
         }
         else {
             this.hand = [new hand(name + "_1", name, 0)];
             this.money = 100;
             this.bet = 0;
-            this.wins = 0;
             this.pos[0] = [((2*pos + 1)*size[0]/6)/*-imgsize[0]/2*/, (size[1]/2)+imgsize[1] - 20];
             this.pos[1] = [10, 30*(pos+1)];
         }
         if(name.startsWith("P")) {
             this.isActive = true;
+        }
+        else{
+            this.bet = Math.round(50 * (Math.random() + 0.5));
         }
         this.elements = new element("game", this.pos[0], "card", true, imgsize, false).init(name);
         this.stats = new element("game", this.pos[1], "text", false, [165, 30], true, null, "("+name+") Wins: 0, Total: [0]", "", "15px Georgia").init(name+"Stats");
@@ -197,6 +201,7 @@ class player {
     runAI(handindex) { //Run the AI descision making
         let command = [false, "none"]; //Also tell extra instructional input for runGame //Determine whether of not a auto animation needs to play
 
+        //this.doubledown(handindex);
         if (this.isDealer) { //Run dealer algorition
             if (this.agro > 3 && this.checksplit(handindex) && !this.hand[handindex].standDeck('check')) {
                 this.split(handindex);
@@ -211,7 +216,29 @@ class player {
             }
         }
         else { //Regular opponent algoritim
-            console.log("LOL");
+            let rnd = Math.random();
+            let val = this.hand[handindex].getValue();
+            let agro = this.agro
+
+            //if (Math.Abs(11 - val)+1)/(21+agro) < rand then DD
+            //if ((val+agro)/21 >= rnd) then stand
+            //else then hit
+
+            if (this.checksplit(handindex) && !this.hand[handindex].standDeck('check')) { //Player Split the deck
+                this.split(handindex);
+                command[0] = true;
+            }
+            else if (2* (Math.abs(11 - val)+ 1) / (21 + agro) < rnd && this.hand[handindex].deck.length == 2 && !this.hand[handindex].standDeck('check')) {
+                this.doubledown(handindex);
+            }
+            else if ((val+agro)/21 >= rnd && !this.hand[handindex].standDeck('check')) {
+                this.stand(handindex);
+            }
+            
+            else {
+                this.hit(handindex);
+                command[0] = this.checksplit(handindex);
+            }
         }
 
         return command;
@@ -240,11 +267,16 @@ class player {
 
     doubledown(gamedeck) { //Double the bet and add 1 extra card
         console.log(this.name + " Doubles Down on " + this.hand[gamedeck].name);
+        this.bet *= 2;
+        this.hit(gamedeck);
+        this.stand(gamedeck);
     }
 
+    /*
     insure(gamedeck) { //Insurance
         console.log(this.name + " Insures " + this.hand[gamedeck].name);
     } 
+    */
 
     //Moves cards to a new location/card hand
     movecard(newhand, oldhand, card) {
@@ -267,8 +299,15 @@ class player {
     }
 
     getHandInfo(com) {
-        if(com === "size"){
+        if (com === "size") {
             return this.hand.length;
+        }
+        if (com === "value") {
+            let arrVals = [];
+            for (let i = 0; i < this.hand.length; i++) {
+                arrVals.push(this.hand[i].getValue());
+            }
+            return arrVals;
         }
     }
 }
@@ -288,9 +327,13 @@ class element {
     }
 
     //Update the element
-    updateelement(){
+    updateelement(ret){
         objects[this.key] = this
-        return this;
+        if(ret){ return this; }
+    }
+
+    changetext(text){
+        this.text = text;
     }
 
     addhandvalues(hand){
@@ -332,8 +375,8 @@ objects =
 
 let players = [
     new player("D", null, 5),
-    new player("O1", 1, 1),
-    new player("P1", 0),
+    new player("O1", 0, 1),
+    new player("P1", 1),
     new player("O2", 2, 1)
 ]
 

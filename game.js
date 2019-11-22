@@ -64,7 +64,7 @@ window.addEventListener("mousemove", (event) => {
 //On window load
 window.onload = function () {
 
-    players[0].sendElementInfo(0);
+    //players[0].sendElementInfo(0);
     //Create game objects
     deck = new hand("Deck");
 
@@ -145,6 +145,15 @@ function runGame(){
     //console.log(players[turn].hand[turnhand]);
 }
 
+//Updates the status of the players' info
+function updateStats(){
+    for (p in players){
+        let player = players[p];
+        if(player.isDealer){ player.stats.changetext("(" + player.name + ") Wins: " + player.wins + ", Hand Value: " + player.getHandInfo("value")); }
+        else { player.stats.changetext("(" + player.name + ") Wins: " + player.wins + ", Bet: " + player.bet);}
+    }
+}
+
 //Detects and manages the onclick/ondblclick events
 function detectPress(x, y, op=""){
     if (cardDrag) {
@@ -206,7 +215,7 @@ function dragObj() {
 
 //Updates information below canvas
 function update(){
-
+    updateStats();
     let time = document.getElementById("time");
     let diff = document.getElementById("diff");
     //let sco = document.getElementById("score");
