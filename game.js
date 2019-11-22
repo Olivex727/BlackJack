@@ -19,7 +19,7 @@ let scene = "title";
 let gameon = false;
 let gamestart = true;
 //let win = true;
-//let score = 0;
+let score = 0;
 //let difficulty = false;
 //let moves = 0;
 
@@ -149,8 +149,8 @@ function runGame(){
 function updateStats(){
     for (p in players){
         let player = players[p];
-        if(player.isDealer){ player.stats.changetext("(" + player.name + ") Wins: " + player.wins + ", Hand Value: " + player.getHandInfo("value")); }
-        else { player.stats.changetext("(" + player.name + ") Wins: " + player.wins + ", Bet: " + player.bet);}
+        if(player.isDealer){ player.stats.changetext("(" + player.name + ") Wins: " + player.wins); }
+        else { player.stats.changetext("(" + player.name + ") Wins: " + player.wins + ", Bet: " + player.bet + ", Money: " + player.money);}
     }
 }
 
@@ -217,17 +217,23 @@ function dragObj() {
 function update(){
     updateStats();
     let time = document.getElementById("time");
-    let diff = document.getElementById("diff");
-    //let sco = document.getElementById("score");
+    //let diff = document.getElementById("diff");
+    let sco = document.getElementById("score");
     //let mov = document.getElementById("moves");
     if(gameon){
         runGame();
         time.textContent = (parseInt(time.textContent) + 1).toString();
+        for (p in players) {
+            if(players[p].isActive){
+                score.textContent = (players[p].money * players[p].wins).toString();
+            }
+        }
         //if(!difficulty){diff.textContent = "Easy"}else{diff.textContent = "Hard"}
     }
     else{
         time.textContent = 0;
-        diff.textContent = "Choose an option";
+        score.textContent = 0;
+        //diff.textContent = "Choose an option";
     }
     //sco.textContent = score;
     //mov.textContent = moves;
@@ -291,19 +297,30 @@ function NewGame(){
     console.log("Loaded");
 }
 
-//Loads an old game
-function LoadGame(){
-    console.log("Loading Game ...");
-    scene = "game";
-    gameon = true;
-    setScene();
-    update();
-    //Load the previous save file
-    console.log("Loaded");
+//Changes to the options menu
+function Options(entering){
+    if(entering){
+        console.log("Options Menu");
+        scene = "ops";
+        console.log("Loaded");
+    }
+    else {
+        console.log("Title Screen");
+        scene = "title";
+        console.log("Loaded");
+    }
 }
 
-function SaveGame(){
-    //Save the current game and override the file
+function ChangeDifficulty(dealer){
+    let i = 1; if (dealer) { i = 0; }
+    if (agro[i] >= 5){
+        agro[i] = 0;
+    }
+    else {
+        agro[i]++;
+    }
+    objects["DealDiff"].changetext("Dealer Difficulty: "+agro[0]);
+    objects["OppDiff"].changetext("Opponent Difficulty: " + agro[1]);
 }
 
 //Manages html audio elements

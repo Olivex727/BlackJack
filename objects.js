@@ -6,6 +6,8 @@ let objects = {};
 
 let deck = null;
 
+let agro = [1, 0]; //Error with double clicking in new scence -- Since it only affects one box, it is not necessary to be fixed
+
 //Create object classes
 
 //Card class is for each individual card
@@ -142,7 +144,7 @@ class hand {
             if(showfacedown){
                 arrCards.push(this.deck[i].getName());
             }
-            else if (i < items - this.facedown) {
+            else if (i >= this.facedown) {
                 arrCards.push(this.deck[i].getName());
             }
             else {
@@ -164,7 +166,7 @@ class player {
         this.wins = 0;
         if(name.startsWith("D")){
             this.isDealer = true;
-            this.hand = [new hand(name + "_1", name, 0/* Change to One Later */)];
+            this.hand = [new hand(name + "_1", name, 1/* Change to One Later */)];
             this.pos[0] = [(size[0]/2)/*-imgsize[0]/2*/, (size[1]/6) - 20]
             this.pos[1] = [10 + size[0] / 3, 30];
             //this.bet = 10;
@@ -178,9 +180,10 @@ class player {
         }
         if(name.startsWith("P")) {
             this.isActive = true;
+            this.placebet(5);
         }
         else{
-            this.bet = Math.round(50 * (Math.random() + 0.5));
+            this.placebet(Math.round(50 * (Math.random() + 0.5)));
         }
         this.elements = new element("game", this.pos[0], "card", true, imgsize, false).init(name);
         this.stats = new element("game", this.pos[1], "text", false, [165, 30], true, null, "("+name+") Wins: 0, Total: [0]", "", "15px Georgia").init(name+"Stats");
@@ -218,7 +221,7 @@ class player {
         else { //Regular opponent algoritim
             let rnd = Math.random();
             let val = this.hand[handindex].getValue();
-            let agro = this.agro
+            let agros = this.agro
 
             //if (Math.Abs(11 - val)+1)/(21+agro) < rand then DD
             //if ((val+agro)/21 >= rnd) then stand
@@ -228,10 +231,10 @@ class player {
                 this.split(handindex);
                 command[0] = true;
             }
-            else if (2* (Math.abs(11 - val)+ 1) / (21 + agro) < rnd && this.hand[handindex].deck.length == 2 && !this.hand[handindex].standDeck('check')) {
+            else if (2 * (Math.abs(11 - val) + 1) / (21 + agros) < rnd && this.hand[handindex].deck.length == 2 && !this.hand[handindex].standDeck('check') && this.placebet(this.bet, true)) {
                 this.doubledown(handindex);
             }
-            else if ((val+agro)/21 >= rnd && !this.hand[handindex].standDeck('check')) {
+            else if ((val+agros)/21 >= rnd+0.5 && !this.hand[handindex].standDeck('check')) {
                 this.stand(handindex);
             }
             
@@ -258,6 +261,9 @@ class player {
     hit(gamedeck) {
         console.log(this.name + " Hits on " + this.hand[gamedeck].name);
         this.pushCard(/*new card(8, 'S') -- Uncomment if u want some spades*/deck.drawCard(), gamedeck);
+        if (this.hand[gamedeck].getValue() > 21){
+            this.stand(gamedeck)
+        }
     }
 
     stand(gamedeck) {
@@ -267,16 +273,27 @@ class player {
 
     doubledown(gamedeck) { //Double the bet and add 1 extra card
         console.log(this.name + " Doubles Down on " + this.hand[gamedeck].name);
-        this.bet *= 2;
+        this.placebet(this.bet);
         this.hit(gamedeck);
-        this.stand(gamedeck);
+        if (!this.hand[gamedeck].standDeck("check")) {
+            this.stand(gamedeck);
+        }
     }
 
-    /*
-    insure(gamedeck) { //Insurance
-        console.log(this.name + " Insures " + this.hand[gamedeck].name);
-    } 
-    */
+    placebet(num, check=false) {
+        if (num >= -1 * this.bet && num <= this.money) {
+            if (check){
+                return true;
+            }
+            else {
+                this.bet += num;
+                this.money -= num;
+            }
+        }
+        else if (check) {
+            return false;
+        }
+    }
 
     //Moves cards to a new location/card hand
     movecard(newhand, oldhand, card) {
@@ -363,8 +380,14 @@ objects =
     //Title text objects
     "Title": new element("title", [10, 50], "text", false, [380, 30], true, null, "BlackJack", "", "50px Georgia"),
     "New": new element("title", [10, 50 + size[1] / 4], "text", true, [380, 30], true, null, "New Game", "NewGame();", "30px Georgia"),
-    "Load": new element("title", [10, 50 + size[1] / 2], "text", true, [380, 30], true, null, "Load Game", "LoadGame();", "30px Georgia"),
+    "Ops": new element("title", [10, 50 + size[1] / 2], "text", true, [380, 30], true, null, "Options", "Options(true);", "30px Georgia"),
     
+    //Options Menu
+    "TitleOps": new element("ops", [10, 50], "text", false, [380, 30], true, null, "Options", "", "50px Georgia"),
+    "DealDiff": new element("ops", [10, 50 + size[1] / 4], "text", true, [380, 30], true, null, "Dealer Difficulty: 1 (Click to change)", "ChangeDifficulty(true);", "30px Georgia"),
+    "OppDiff": new element("ops", [10, 50 + size[1] / 2], "text", true, [380, 30], true, null, "Opponent Difficulty: 1 (Click to change)", "ChangeDifficulty(false);", "30px Georgia"),
+    "BackOps": new element("ops", [10, 50 + size[1] * 3 / 4], "text", true, [380, 30], true, null, "< Back", "Options(false);", "20px Georgia"),
+
     //Game Boxes/Boundaries and the Deck
     //"DealerSec" : { scene:"game", pos:[size[0]/3, 0], type:"card", click:false, size:[size[0]/3, size[1]/2], empty:true},
     "DealerSec" : new element("game", [size[0]/3, 0], "card", false, [size[0]/3, size[1]/2], true),
@@ -374,10 +397,10 @@ objects =
 }
 
 let players = [
-    new player("D", null, 5),
-    new player("O1", 0, 1),
+    new player("D", null, agro[0]),
+    new player("O1", 0, agro[1]),
     new player("P1", 1),
-    new player("O2", 2, 1)
+    new player("O2", 2, agro[1])
 ]
 
 /*
