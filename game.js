@@ -230,8 +230,6 @@ function reset(hardreset){
         gameon = true;
     }
     deck = new hand("Deck");
-    update();
-    
 }
 
 //Updates the status of the players' info
