@@ -14,12 +14,12 @@ body {
 }
 
 .main .info {
-    margin-left: 300px;
+    margin-left: 450px;
 }
 
 .main .info ls{
     display: inline;
-    margin: 10px;
+    margin: 20px;
 }
 
 .main .ops ls {

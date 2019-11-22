@@ -17,7 +17,10 @@
   },
   "homepage": "https://github.com/Olivex727/SolitaireForOne#readme",
   "dependencies": {
+    "cloudinary": "^1.17.0",
+    "cloudinary-core": "^2.7.4",
     "python-shell": "^1.0.8",
-    "readimage": "^1.1.1"
+    "readimage": "^1.1.1",
+    "socket.io": "^2.3.0"
   }
 }
