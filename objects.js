@@ -2,12 +2,10 @@
 const canvas = document.getElementById("screen");
 const ctx = canvas.getContext("2d");
 
+//Create the main game objects
 let objects = {};
-
 let deck = null;
-
 let agro = [1, 1]; //Error with double clicking in new scence -- Since it only affects one box, it is not necessary to be fixed
-
 let totaldecks = 4;
 
 //Create object classes
@@ -31,13 +29,14 @@ class card {
             this.isAce = false;
         }
         this.location = "Deck";
-        //this.img = this.num+"_"+this.suite+".png"
     }
 
+    //Change the location of the card -- Defunct
     move(newhand){
         this.location = newhand;
     }
 
+    //Get the name of the card
     getName(){
         return this.number + this.suite;
     }
@@ -45,12 +44,13 @@ class card {
 
 //The hand class is a group of cards
 class hand {
-    constructor (name, owner="none", facedown) {
+    constructor (name, owner="none", facedown=0, split=false) {
         this.name = name;
         this.deck = []
         this.owner = owner
         this.standing = false; //If the player is able to draw more cards
-        this.facedown = facedown; //Number of face-up cards}
+        this.facedown = facedown; //Number of face-up cards
+        this.split = split;
 
         if(name === "Deck"){
             for(var s in ["S", "D", "C", "H"]){
@@ -65,7 +65,6 @@ class hand {
 
     //Randomly shuffles the cards
     shuffle(num) {
-        //console.log(this.deck);
         for(var i=0; i<num; i++){
             var a = Math.round(Math.random() * (this.deck.length - 1));
             var b = Math.round(Math.random() * (this.deck.length - 1));
@@ -98,27 +97,19 @@ class hand {
         return total;
     }
 
-    /* Defunct
-    getCardArr(){
-        let arrCards = []
-        for(let c in this.deck){
-            let card = this.deck[c];
-            arrCards.push(card.getName());
-        }
-        return arrCards;
-    }
-    */
-
+    //Add a card to the hand
     pushCard(card){
         if (!this.standing){
             this.deck.push(card);
         }
     }
 
+    //Remove a card from the hand
     drawCard(){
         return this.deck.pop();
     }
 
+    //Make the deck stand so that the card can't be hit on
     standDeck(standval){
         if (standval === 'check') { return this.standing; }
         else if (standval) { this.standing = standval; }
@@ -126,9 +117,8 @@ class hand {
         
     }
 
+    //Check if the hand is doubled up
     doubledUp(){
-        //console.log(this.deck.length)
-        //console.log(this.deck[0].value)
         if (this.deck.length == 2 && this.deck[0].number == this.deck[1].number){
             return true;
         }
@@ -137,10 +127,10 @@ class hand {
         }
     }
 
+    //Gets the array of card names
     getCardName(items, showfacedown=false){
         let arrCards = [];
         if(items === null){ items = this.deck.length;}
-        //console.log(items);
         for (let i = 0; i < items; i++) {
             if (i >= this.deck.length){ break; } //Failsafe
             if(showfacedown){
@@ -153,7 +143,6 @@ class hand {
                 arrCards.push('back');
             }
         }
-        //console.log(arrCards);
         return arrCards;
     }
 }
@@ -161,20 +150,24 @@ class hand {
 //Player class contains all of the movement operations
 class player {
     constructor(name, pos=0, agression=null){
+        //Standard variable creation
         this.name = name;
         this.pos = [[0, 0], [0, 0]]; //Set the standard position of screen elements
         this.deckno = 0; //Set the deck no. to keep track of objects under split decks
         this.agro = agression;
         this.wins = 0;
         this.money = 0;
-        this.isActive = false; this.isDealer = false;
+        this.isActive = false; this.isDealer = false; this.hasSplit = false;
+
+        //If the player is the dealer
         if(name.startsWith("D")){
             this.isDealer = true;
-            this.hand = [new hand(name + "_1", name, 1/* Change to One Later */)];
-            this.pos[0] = [(size[0]/2)/*-imgsize[0]/2*/, (size[1]/6) - 20]
+            this.hand = [new hand(name + "_1", name, 1)];
+            this.pos[0] = [(size[0]/2), (size[1]/6) - 20]
             this.pos[1] = [10 + size[0] / 3, 30];
-            //this.bet = 10;
         }
+
+        //If the player is an opponent/player
         else {
             this.hand = [new hand(name + "_1", name, 0)];
             this.money = 100;
@@ -182,10 +175,13 @@ class player {
             this.pos[0] = [((2*pos + 1)*size[0]/6)/*-imgsize[0]/2*/, (size[1]/2)+imgsize[1] - 20];
             this.pos[1] = [10, 30*(pos+1)];
         }
+
+        //If the player is actually a human
         if(name.startsWith("P")) {
             this.isActive = true;
             this.placebet(5);
         }
+        //Computer player
         else{
             this.placebet(Math.round(50 * (Math.random() + 0.5)));
         }
@@ -193,22 +189,16 @@ class player {
         this.stats = new element("game", this.pos[1], "text", false, [165, 30], true, null, "("+name+") Wins: 0, Total: [0]", "", "15px Georgia").init(name+"Stats");
     }
 
-    //Defunct
-    sendElementInfo(hand){
-        //this.hand[hand].deck.push(new card(13, 'S'));
-        //this.hand[hand].deck.push(new card(11, 'D'));
-        //this.elements[hand].addhandvalues(this.hand[hand].getCardArr())
-    }
-
+    //Create a new hand
     createHand(){
         let handlength = this.hand.length;
         this.hand.push(new hand(name+"_"+handlength, name, 0));
-    } //Create a new hand
+    }
 
-    runAI(handindex) { //Run the AI descision making
-        let command = [false, "none"]; //Also tell extra instructional input for runGame //Determine whether of not a auto animation needs to play
+    //Run the AI descision making
+    runAI(handindex) {
+        let command = [false, "none"]; //Extra instructional input for runGame
 
-        //this.doubledown(handindex);
         if (this.isDealer) { //Run dealer algorition
             if (this.agro > 3 && this.checksplit(handindex) && !this.hand[handindex].standDeck('check')) {
                 this.split(handindex);
@@ -252,31 +242,36 @@ class player {
         return command;
     }
 
+    //Check whether the deck can be split
     checksplit(gamedeck) {
         //console.log("CHECK SPLIT: " + this.hand[gamedeck].doubledUp());
         return this.hand[gamedeck].doubledUp();
     }
 
+    //Split the hand
     split(gamedeck) {
         console.log(this.name + " Splits on " + this.hand[gamedeck].name);
-        this.hand.splice(gamedeck+1, 0, new hand(this.name + "_" + (gamedeck + 1), name, 0));
+        this.hand.splice(gamedeck+1, 0, new hand(this.name + "_" + (gamedeck + 1), name, 0, true));
         this.pushCard(this.hand[gamedeck].drawCard(), gamedeck+1);
-        totaldecks++;
+        totaldecks++; this.hasSplit = true;
     }
 
+    //Hit the hand
     hit(gamedeck) {
         console.log(this.name + " Hits on " + this.hand[gamedeck].name);
-        this.pushCard(/*new card(8, 'S') -- Uncomment if u want some spades*/deck.drawCard(), gamedeck);
+        this.pushCard(deck.drawCard(), gamedeck);
         if (this.hand[gamedeck].getValue() > 21){
             this.stand(gamedeck)
         }
     }
 
+    //Stand the hand
     stand(gamedeck) {
         console.log(this.name + " Stands on " + this.hand[gamedeck].name);
         this.hand[gamedeck].standDeck(true);
     }
 
+    //Double down on the bet -- Affects all split decks
     doubledown(gamedeck) { //Double the bet and add 1 extra card
         console.log(this.name + " Doubles Down on " + this.hand[gamedeck].name);
         this.placebet(this.bet);
@@ -286,8 +281,9 @@ class player {
         }
     }
 
+    //Place or check if possible the bet
     placebet(num, check=false) {
-        if (num >= -1 * this.bet && num <= this.money) {
+        if (num >= 5 + (-1 * this.bet) && num <= this.money) {
             if (check){
                 return true;
             }
@@ -313,14 +309,17 @@ class player {
 
     }
 
+    //Move a card to the hand
     pushCard(card, gamedeck) {
         this.hand[gamedeck].pushCard(card);
     }
 
+    //Return the array of cards
     returnCards(items, deck) {
         return this.hand[deck].getCardName(items);
     }
 
+    //Get information about the hand array
     getHandInfo(com) {
         if (com === "size") {
             return this.hand.length;
@@ -355,15 +354,18 @@ class element {
         if(ret){ return this; }
     }
 
+    //Change the text of the element
     changetext(text){
         this.text = text;
     }
 
+    //Add the hand values to the element -- Defunct
     addhandvalues(hand){
         this.handvals = hand;
         console.log("HAND: " + hand);
     }
 
+    //Allow the button to be pressed
     activateButton(set) {
         if (this.type === "button") {
             this.active = set;
@@ -373,14 +375,11 @@ class element {
 
 //Screen Info
 const size = [canvas.clientWidth, canvas.clientHeight];
-const imgsize = [65, 100]
-
-let money = [100, 0, 100, 0] //Player:(Money, Bet), Opponent:(Money, Bet)
+const imgsize = [65, 100];
 
 //Dictionary of all screen elements
 objects =
 {
-    //(scene, pos, type, click, size, empty = true, image = "", text = "", onclick = "", style = "15px Georgia")
     //Title text objects
     "Title": new element("title", [10, 50], "text", false, [380, 30], true, null, "BlackJack", "", "50px Georgia"),
     "New": new element("title", [10, 50 + size[1] / 4], "text", true, [380, 30], true, null, "New Game", "NewGame();", "30px Georgia"),
@@ -405,13 +404,12 @@ objects =
     "StandCount": new element("game", [10 + (2 * size[0] / 3), 200], "text", false, [380, 30], true, null, "Standing Decks: 0", "", "20px Georgia"),
 
     //Game Boxes/Boundaries and the Deck
-    //"DealerSec" : { scene:"game", pos:[size[0]/3, 0], type:"card", click:false, size:[size[0]/3, size[1]/2], empty:true},
     "DealerSec" : new element("game", [size[0]/3, 0], "card", false, [size[0]/3, size[1]/2], true),
     "GameSec": new element("game", [0, 0], "card", false, [size[0], size[1]/2], true),
-    //{ scene:"game", pos:[20, (size[1]/3)-imgsize[1]/2], type:"card", click:true/*CHANGE LATER, onclick:"AutoAssign();"*/, size:imgsize, empty:true}
-    "Deck": new element("game", [20, (size[1] / 3) - imgsize[1] / 2], "card", false, imgsize, false, null /*, "", CHANGE LATER, onclick:"AutoAssign();"*/)
+    "Deck": new element("game", [20, (size[1] / 3) - imgsize[1] / 2], "card", false, imgsize, false, null)
 }
 
+//Define the list of players
 let players = [
     new player("D", null, agro[0]),
     new player("O1", 0, agro[1]),
@@ -420,11 +418,6 @@ let players = [
 ]
 
 /*
- * Card Naming Scheme:
- * 
- * Ace = 1, Numbers 2-10 = 2-10, Jack = 11, Queen = 12, King = 13
- * Put underscore here
- * Spades = 1, Diamonds = 2, Clubs = 3, Hearts = 4
  * 
  * Actual Image Size: 691 by 1056
  * Preset Image Size: 65 by 100
