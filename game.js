@@ -1,28 +1,11 @@
-console.log("START");
-
-/*
-function getpy(){
-    const x = $.ajax({
-        type: "get",
-        url: "/py",
-        async : false
-    })
-    console.log(x);
-    console.log(x.responseText);
-}
-
-//getpy();
-*/
+console.log("BEGIN BLACKJACK");
 
 //Main game information
 let scene = "title";
 let gameon = false;
-//let gamerun = false;
 let gamestart = true;
 let score = 0;
 let standing = 0;
-//let difficulty = false;
-//let moves = 0;
 
 //Audio values
 let jazzplay = false;
@@ -65,7 +48,6 @@ window.addEventListener("mousemove", (event) => {
 //On window load
 window.onload = function () {
 
-    //players[0].sendElementInfo(0);
     //Create game objects
     deck = new hand("Deck");
 
@@ -110,19 +92,18 @@ function runGame(){
         }
         let playerval = 0;
         for (p in players) {
-            //console.log(players[p]);
             if(players[p].isActive){playerindex = p;}
             for (h in players[p].hand){
-                //console.log(players[p].hand[h])
-                //console.log(players[p].hand[h].name)
                 playerval = players[p].hand[h].getValue();
                 if (playerval == 21) {
-                    if (players[p].hand[h].deck[0].number === '1' || dealerval == 21){
+                    //Wins on split aces blackjacks
+                    if ((players[p].hand[h].deck[0].number === '1' && players[p].hasSplit) || dealerval == 21) {
                         console.log(players[p].name + " Won 1:1 (NTBJ) on " + players[p].hand[h].name);
                         players[p].wins++;
                         players[p].money += 2*players[p].bet;
                         dealerwin = true;
                     }
+                    //Wins on blackjacks
                     else {
                         console.log(players[p].name + " Won 3:2 on " + players[p].hand[h].name);
                         players[p].wins++;
@@ -130,17 +111,20 @@ function runGame(){
                     }
                 }
                 else{
+                    //If the player beats the dealer
                     if (playerval > dealerval){
                         console.log(players[p].name + " Won 1:1 on " + players[p].hand[h].name);
                         players[p].wins++;
                         players[p].money += 2*players[p].bet;
                     }
-                    if (playerval == dealerval) {
+                    //If player ties with dealer
+                    else if (playerval == dealerval) {
                         console.log(players[p].name + " Tied on " + players[p].hand[h].name);
                         dealerwin = true;
                         players[p].money += players[p].bet;
                     }
-                    if (playerval < dealerval) {
+                    //If player looses to the dealer
+                    else if (playerval < dealerval) {
                         console.log(players[p].name + " Lost on " + players[p].hand[h].name);
                         //players[p].money -= players[p].bet;
                         dealerwin = true;
@@ -152,14 +136,14 @@ function runGame(){
             }
         }
 
+        //Reset key variables and add win totals to dealer
         totaldecks = 4;
-
         if (dealerwin){ players[dealerindex].wins++;}
-
         if(players[playerindex].money > 0) { reset(false); gamestart = true; } else { scene = "title"; reset(true); }
         
     }
 
+    //Perform opening game tasks
     if (gamestart){
 
         gamestart = false;
@@ -185,18 +169,16 @@ function runGame(){
             if (players[turn].isActive){ playerturn = true; }
         }
         if (!playerturn) {
-            //console.log(players[turn].name)
             let AIout = players[turn].runAI(turnhand);
-            //console.log(AIout[0] + "_"+ turnhand)
             if (AIout[0]){ turnhand--; }
             else{ auto(AIout[1]); }
             turncomp = true;
         }
     }
     console.log(playerturn);
-    //console.log(players[turn].hand[turnhand]);
 }
 
+//Reset the game either by returning to title or restarting round
 function reset(hardreset){
     if (hardreset){
         players = [
@@ -207,7 +189,8 @@ function reset(hardreset){
         ]
     }
     else {
-        for(p in players){
+        for (p in players) {
+            players[p].hasSplit = false;
             if (players[p].isDealer){players[p].hand = [new hand(players[p].name + "_1", players[p].name, 1)];}
             else {
                 players[p].hand = [new hand(players[p].name + "_1", players[p].name, 0)];
@@ -255,6 +238,8 @@ function updateStats(){
 
 //Detects and manages the onclick/ondblclick events
 function detectPress(x, y, op=""){
+
+    //Card Dragging is not used, however it remains in the module
     if (cardDrag) {
         cardDrag = false;
         window.clearInterval(dragtimer);
@@ -279,7 +264,6 @@ function detectPress(x, y, op=""){
                                 cardDrag = true;
                                 dragtimer = window.setInterval(function(){/*dragObj()*/}, 10);
                                 originalpos = objects[obj].pos;
-                                //console.log(originalpos);
                             }
                             else if (op === "auto"){
                                 objects[drag].pos = originalpos;
@@ -331,10 +315,11 @@ function update(){
                 ((obj === "Hit Button" && player.hand[turnhand].getValue() < 21) ||
                 (obj === "Split Button" && player.checksplit(turnhand)) ||
                 (obj === "DD Button" && player.placebet(player.bet, true) && player.hand[turnhand].doubledUp() && player.hand[turnhand].getValue() < 21) ||
+                ( !player.hasSplit && (
                 (obj === "B+1 Button" && player.placebet(1, true) && player.hand[turnhand].deck.length == 2) ||
                 (obj === "B-1 Button" && player.placebet(-1, true) && player.hand[turnhand].deck.length == 2) ||
                 (obj === "B+10 Button" && player.placebet(10, true) && player.hand[turnhand].deck.length == 2) ||
-                (obj === "B-10 Button" && player.placebet(-10, true) && player.hand[turnhand].deck.length == 2))
+                (obj === "B-10 Button" && player.placebet(-10, true) && player.hand[turnhand].deck.length == 2))))
                 ) || (obj === "Stand Button"))
             { 
                 objects[obj].active = true;
@@ -368,17 +353,21 @@ function update(){
 
 //Manages Object Placement
 function setScene(){
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = "#ffff00";
     ctx.drawImage(renderImage("background2", "bck"), 0, 0, size[0], size[1]);
+
     for(let obj in objects)
     {
         if(objects[obj].scene === scene){
+            //Print Text/Label objects
             if (objects[obj].type === "text"){
                 ctx.fillStyle = "#ffffff";
                 ctx.font = objects[obj].style;
                 ctx.fillText(objects[obj].text, objects[obj].pos[0], objects[obj].pos[1]);
             }
+            //Print Button objects
             if (objects[obj].type === "button") {
                 
                 if (objects[obj].active) {
@@ -395,23 +384,25 @@ function setScene(){
                 ctx.font = objects[obj].style;
                 ctx.fillText(objects[obj].text, objects[obj].pos[0] + 5, objects[obj].pos[1] + ((3/4)*objects[obj].size[1]));
             }
+            //Print Card/Bounding Box objects
             if (objects[obj].type === "card"){
+                //Bounding Boxes
                 if (objects[obj].empty){
                     ctx.lineWidth = 1;
                     ctx.strokeStyle = "#ffff00";
                     ctx.strokeRect(objects[obj].pos[0], objects[obj].pos[1], objects[obj].size[0], objects[obj].size[1]);
                 }
                 else{
+                    //Printing the Deck
                     if(obj === "Deck"){
                         ctx.drawImage(renderImage("back", "cards"), objects[obj].pos[0], objects[obj].pos[1], imgsize[0], imgsize[1]);
-                        //console.log("Printed: " +obj)
                     }
+                    //Cardpiles
                     else {
                         for(let p in players){
                             if(obj === players[p].name){
                                 let handsize = players[p].getHandInfo("size");
                                 let handlen = ((imgsize[0] * (handsize)) + (20 * (handsize-1)))/2;
-                                //console.log(handlen);
                                 for (let j = 0; j < handsize; j++) {
                                     let cardprint = players[p].returnCards(null, j);
                                     let newposx = objects[obj].pos[0] - (handlen) + (j * (20+imgsize[0]));
@@ -419,18 +410,16 @@ function setScene(){
                                         ctx.drawImage(renderImage(cardprint[i], "cards"), newposx, objects[obj].pos[1]+(15 * i), imgsize[0], imgsize[1]);
                                     }
                                 }
-                                //console.log(cardprint);
                             }
                         }
                     }
-                    //for
-                    //ctx.drawImage(renderImage("background2", "bck"), objects[obj].pos[0], objects[obj].pos[1], objects[obj].size[0], objects[obj].size[1]);
                 }
             }
         }
     }
 }
 
+//Manages the user inputs based on the button press (Conditions are handled with the buttons)
 function buttonPress(input){
     console.log("Player input");
     let finised = true;
@@ -453,12 +442,6 @@ function buttonPress(input){
        let betplace = input.split("_")[1];
        player.placebet(parseInt(betplace));
        finised = false;
-       /*
-       if (inarr[1] === "+"){
-           if (inarr[2] === "1"){ player.bet(1); }
-           if (inarr[2] === "10"){ player.bet(10); }
-       }
-       */
     }
     turncomp = finised;
 }
@@ -469,7 +452,6 @@ function NewGame(){
     scene = "game";
     gameon = true;
     gamestart = true;
-    //runGame(false);
     setScene();
     update();
     console.log("Loaded");
@@ -489,6 +471,7 @@ function Options(entering){
     }
 }
 
+//Changes the difficulty settings of the players involved
 function ChangeDifficulty(dealer){
     let i = 1; if (dealer) { i = 0; }
     if (agro[i] >= 5){
