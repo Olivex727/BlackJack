@@ -45,12 +45,13 @@ class card {
 
 //The hand class is a group of cards
 class hand {
-    constructor (name, owner="none", facedown) {
+    constructor (name, owner="none", facedown=0, split=false) {
         this.name = name;
         this.deck = []
         this.owner = owner
         this.standing = false; //If the player is able to draw more cards
         this.facedown = facedown; //Number of face-up cards}
+        this.split = split;
 
         if(name === "Deck"){
             for(var s in ["S", "D", "C", "H"]){
@@ -259,7 +260,7 @@ class player {
 
     split(gamedeck) {
         console.log(this.name + " Splits on " + this.hand[gamedeck].name);
-        this.hand.splice(gamedeck+1, 0, new hand(this.name + "_" + (gamedeck + 1), name, 0));
+        this.hand.splice(gamedeck+1, 0, new hand(this.name + "_" + (gamedeck + 1), name, 0, true));
         this.pushCard(this.hand[gamedeck].drawCard(), gamedeck+1);
         totaldecks++;
     }

@@ -146,6 +146,9 @@ function runGame(){
                         dealerwin = true;
                     }
                 }
+                if (players[p].hand[h].split){
+                    players[p].money -= players[p].bet; //Get rid of extra winnings provided by split decks
+                }
             }
         }
 
