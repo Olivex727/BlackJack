@@ -1,6 +1,11 @@
 # Oliver Walters' BlackJack
 Y12 Term 4 Project
 
+# Getting Started
+- To run the game, enter into the console 'npm start'
+- If it doesn't work, you may have to enter 'npm init'
+- Go to https://localhost:3000
+
 # Rules
 
 ## Basic Rules
